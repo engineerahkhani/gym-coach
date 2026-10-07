@@ -101,8 +101,17 @@ label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--mu
 ul.tips{margin:6px 0 0;padding-right:18px;font-size:14px}
 ul.tips li{margin-bottom:3px}
 .sets{display:flex;flex-direction:column;gap:6px;margin-top:8px}
-.setrow{display:grid;grid-template-columns:30px 1fr 1fr 56px 56px;gap:5px;align-items:center}
-.setrow select{padding:8px 2px;text-align:center;font-variant-numeric:tabular-nums;font-size:15px;appearance:none;-webkit-appearance:none}
+.setrow{display:grid;grid-template-columns:22px 1fr 1fr 48px;gap:5px;align-items:center}
+.stp{direction:ltr;display:flex;align-items:center;background:var(--surface2);border:1px solid var(--line);border-radius:10px;height:44px;overflow:hidden}
+.stp button{width:28px;height:100%;border:0;background:none;color:var(--muted);font-size:20px;line-height:1;padding:0;flex:none}
+.stp button:active{background:var(--line)}
+.stp input{flex:1;min-width:0;width:100%;border:0;background:none;text-align:center;padding:0;height:100%;font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;border-radius:0}
+.stp input:focus{outline:none;background:var(--surface)}
+.stp.dis{justify-content:center;color:var(--muted)}
+.setrow.ok .stp{border-color:var(--good)}
+.rir{grid-column:1/-1;display:flex;gap:6px;align-items:center;font-size:12px;padding:2px 0 4px}
+.rir button{flex:1;min-height:30px;border:1px solid var(--line);background:var(--surface2);border-radius:8px;color:var(--muted);font-size:13px}
+.rir button.on{border-color:var(--accent);color:var(--accent);background:var(--surface)}
 .setrow .n{position:relative}
 .pr{position:absolute;top:-10px;right:0;left:0;font-size:9px;font-style:normal;color:var(--accent);font-weight:700}
 .warm{display:flex;flex-direction:column;gap:4px;margin-top:8px}
@@ -111,9 +120,9 @@ ul.tips li{margin-bottom:3px}
 .warmrow.ok{border-style:solid;color:var(--fg)}.warmrow.ok .ic{opacity:1;color:var(--good)}
 .setrow .n{color:var(--muted);font-size:13px;text-align:center;font-variant-numeric:tabular-nums}
 .setrow input{text-align:center;font-variant-numeric:tabular-nums;font-size:17px;padding:8px 4px}
-.setrow .done{min-height:44px;padding:6px 2px}
+.setrow .done{min-height:44px;padding:6px 0;font-size:14px}
 .setrow.ok input{border-color:var(--good)}
-.hdr{display:grid;grid-template-columns:30px 1fr 1fr 56px 56px;gap:5px;font-size:11px;color:var(--muted);text-align:center}
+.hdr{display:grid;grid-template-columns:22px 1fr 1fr 48px;gap:5px;font-size:11px;color:var(--muted);text-align:center}
 .timer{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:50;padding:20px}
 .timer .big{font-size:88px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
 .timer .ring{width:220px;height:220px}
@@ -509,7 +518,7 @@ function viewSet(){return `<div class="view">
 
 /* ---------- live workout ---------- */
 function startWorkout(w,short){const list=short?W[w].list.slice(0,3).map(([id])=>[id,2]):W[w].list;
- S.live={w,short,start:Date.now(),i:0,ex:list.map(([id,n])=>{const sg=suggest(id,n);return {id,n,sg,sets:Array.from({length:n},()=>({w:sg.w!==null&&sg.w!==undefined?sg.w:'',r:sg.r!==undefined?sg.r:'',rir:null,done:false})),warm:[false,false]};}),note:''};
+ S.live={w,short,start:Date.now(),i:0,ex:list.map(([id,n])=>{const sg=suggest(id,n);return {id,n,sg,sets:Array.from({length:n},(_,i)=>{const ls=(lastSets(id)||{sets:[]}).sets[i];return {w:sg.w!==null&&sg.w!==undefined?sg.w:'',r:sg.r!==undefined?sg.r:(ls&&ls.r?ls.r:''),rir:null,done:false};}),warm:[false,false]};}),note:''};
  save();if(S.settings.wake)wake(true);render();}
 function viewLive(){const lv=S.live,e=lv.ex[lv.i],ex=EX[e.id],done=lv.ex.reduce((a,x)=>a+x.sets.filter(s=>s.done).length,0),total=lv.ex.reduce((a,x)=>a+x.sets.length,0);
  const min=Math.round((Date.now()-lv.start)/60000);const rest=Math.round(ex.rest*S.settings.restScale);const bw=PROG.bodyweight.has(e.id)||e.id==='bike';
@@ -527,18 +536,25 @@ function viewLive(){const lv=S.live,e=lv.ex[lv.i],ex=EX[e.id],done=lv.ex.reduce(
  ${warm?`<div class="warm">${warm}</div>`:''}
  ${pl?`<p class="muted" style="margin:8px 0 0">${ic('dumbbell')}برای ${fa(ww)} کیلو، هر طرف هالتر ${fa(ex.bar)}: <b>${pl.out.length?pl.out.map(fa).join(' + '):'بدون صفحه'}</b>${pl.rest>0.01?` (${fa(pl.rest)} کیلو گرد شد)`:''}</p>`:''}
  ${best?`<p class="muted" style="margin:6px 0 0">${ic('flame')}بهترین وزنهٔ قبلی: ${fa(best)} کیلو</p>`:''}
- <div class="hdr" style="margin-top:10px"><span>ست</span><span>${bw?'—':'وزنه'}</span><span>${ex.unit||'تکرار'}</span><span title="چند تکرار دیگر می‌توانستی؟">در توان</span><span></span></div>
- <div class="sets">${e.sets.map((s,i)=>`<div class="setrow ${s.done?'ok':''}"><span class="n">${fa(i+1)}${s.done&&s.w&&+s.w>best&&best>0?'<i class="pr">PR</i>':''}</span><input type="number" step="0.5" inputmode="decimal" data-set="${i}" data-f="w" value="${s.w}" ${bw?'disabled placeholder="—"':''}><input type="number" inputmode="numeric" data-set="${i}" data-f="r" value="${s.r}" placeholder="${ex.range[1]}"><select data-set="${i}" data-f="rir" ${e.id==='bike'?'disabled':''}><option value="" ${s.rir===null||s.rir===''?'selected':''}>؟</option>${[0,1,2,3].map(n=>`<option value="${n}" ${s.rir===n||s.rir===String(n)?'selected':''}>${n===3?'۳+':fa(n)}</option>`).join('')}</select><button class="btn done ${s.done?'':'primary'}" data-done="${i}">${s.done?'✓':'ثبت'}</button></div>`).join('')}</div>
+ <div class="hdr" style="margin-top:10px"><span>ست</span><span>${bw?'—':'وزنه'}</span><span>${ex.unit||'تکرار'}</span><span></span></div>
+ <div class="sets">${e.sets.map((s,i)=>{const stepW=ex.bar?2.5:(ex.inc||2.5);const rv=s.r===''||s.r===null?'':s.r;const rph=(lastSets(e.id)||{sets:[]}).sets[i]?.r||ex.range[1];return `<div class="setrow ${s.done?'ok':''}"><span class="n">${fa(i+1)}${s.done&&s.w&&+s.w>best&&best>0?'<i class="pr">PR</i>':''}</span>
+ ${bw?'<span class="stp dis">—</span>':`<span class="stp"><button data-stp="w" data-set="${i}" data-d="-${stepW}" aria-label="کمتر">−</button><input type="number" step="0.5" inputmode="decimal" data-set="${i}" data-f="w" value="${s.w}" placeholder="۰"><button data-stp="w" data-set="${i}" data-d="${stepW}" aria-label="بیشتر">+</button></span>`}
+ <span class="stp"><button data-stp="r" data-set="${i}" data-d="-1" aria-label="کمتر">−</button><input type="number" inputmode="numeric" data-set="${i}" data-f="r" value="${rv}" placeholder="${rph}"><button data-stp="r" data-set="${i}" data-d="1" aria-label="بیشتر">+</button></span>
+ <button class="btn done ${s.done?'':'primary'}" data-done="${i}">${s.done?'✓':'ثبت'}</button>
+ ${s.done&&e.id!=='bike'?`<div class="rir"><span class="muted">در توان:</span>${[0,1,2,3].map(n=>`<button class="${s.rir===n?'on':''}" data-rir="${n}" data-set="${i}">${n===3?'۳+':fa(n)}</button>`).join('')}</div>`:''}</div>`;}).join('')}</div>
  <div class="row" style="margin-top:10px"><button class="btn small ghost" id="l-addset">${ic('plus')}ست اضافه</button><button class="btn small ghost" id="l-alt">${ic('swap')}دستگاه اشغاله → ${EX[ex.alt].name}</button></div>
  <div style="margin-top:12px"><div class="muted" style="margin-bottom:4px">رضایتت از این حرکت امروز؟</div><div class="rate">${[1,2,3,4,5].map(n=>`<button class="${e.rating===n?'on':''}" data-rate="${n}">${['😖','😕','😐','🙂','😄'][n-1]}<span>${['بد','ضعیف','متوسط','خوب','عالی'][n-1]}</span></button>`).join('')}</div></div></div>
  <div class="row"><button class="btn grow" id="l-prev" ${lv.i===0?'disabled':''}>قبلی</button>${lv.i<lv.ex.length-1?`<button class="btn primary grow" id="l-next">حرکت بعدی</button>`:`<button class="btn primary grow" id="l-finish">${ic('check')}پایان جلسه</button>`}</div>
  <div class="card"><label class="f">یادداشت جلسه (اختیاری)<textarea id="l-note" style="min-height:60px">${lv.note||''}</textarea></label></div>
  </div>`;}
-function liveInput(ev){const lv=S.live,e=lv.ex[lv.i];{const t=ev.target;if(t.dataset.set!==undefined){const v=t.dataset.f==='rir'?(t.value===''?null:+t.value):t.value;e.sets[+t.dataset.set][t.dataset.f]=v;save();}if(t.id==='l-note'){lv.note=t.value;save();}}}
+function liveInput(ev){const lv=S.live,e=lv.ex[lv.i];{const t=ev.target;if(t.dataset.set!==undefined){const v=t.dataset.f==='rir'?(t.value===''?null:+t.value):t.value;const i=+t.dataset.set;e.sets[i][t.dataset.f]=v;if(t.dataset.f==='w'&&i===0){e.sets.forEach((x,k)=>{if(k>0&&!x.done)x.w=v;});}save();}if(t.id==='l-note'){lv.note=t.value;save();}}}
 function liveClick(ev){const m=$('#main'),lv=S.live,e=lv.ex[lv.i];{const b=ev.target.closest('button');if(!b)return;
   if(b.dataset.done!==undefined){const i=+b.dataset.done,s=e.sets[i];if(s.done){s.done=false;save();render();return;}
-   if(s.r===''||s.r===null){const inp=m.querySelector(`input[data-set="${i}"][data-f="r"]`);inp.focus();toast('تعداد تکرار را بنویس');return;}
+   if(s.r===''||s.r===null){const ph=(lastSets(e.id)||{sets:[]}).sets[i]?.r||EX[e.id].range[1];s.r=ph;}
+   if((s.w===''||s.w===null)&&!(PROG.bodyweight.has(e.id)||e.id==='bike')){const inp=m.querySelector(`input[data-set="${i}"][data-f="w"]`);if(inp)inp.focus();toast('وزنه را وارد کن (با + و − یا تایپ)');return;}
    s.done=true;const prevBest=bestBefore(e.id);save();render();if(prevBest&&+s.w>prevBest)toast(`رکورد جدید! ${fa(s.w)} کیلو، بیشتر از ${fa(prevBest)} 🏆`);const rest=Math.round(EX[e.id].rest*S.settings.restScale);const lastSet=e.sets.every(x=>x.done);if(rest>0)restTimer(rest,lastSet);}
+  if(b.dataset.stp){const i=+b.dataset.set,f=b.dataset.stp,d=+b.dataset.d,st=e.sets[i];let cur=st[f]===''||st[f]===null||st[f]===undefined?null:+st[f];if(cur===null){cur=f==='r'?(+((lastSets(e.id)||{sets:[]}).sets[i]||{}).r||EX[e.id].range[1]):0;}let nv=Math.max(0,Math.round((cur+d)*4)/4);if(f==='r')nv=Math.max(0,Math.round(nv));st[f]=nv;if(f==='w'&&i===0){e.sets.forEach((x,k)=>{if(k>0&&!x.done)x.w=nv;});}save();render();return;}
+  if(b.dataset.rir){const i=+b.dataset.set,n=+b.dataset.rir,st=e.sets[i];st.rir=st.rir===n?null:n;save();render();return;}
   if(b.dataset.warm!==undefined){e.warm=e.warm||[false,false];e.warm[+b.dataset.warm]=!e.warm[+b.dataset.warm];save();render();}
   if(b.dataset.rate){e.rating=e.rating===+b.dataset.rate?null:+b.dataset.rate;save();render();}
   if(b.id==='l-addset'){e.sets.push({w:e.sets[e.sets.length-1].w,r:'',rir:null,done:false});save();render();}
