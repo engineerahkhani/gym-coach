@@ -432,10 +432,11 @@ const TABS=[['today','امروز',ICON.home],['lib','حرکات',ICON.dumbbell],
 let tab='today';
 function renderTabs(){$('#tabs').innerHTML=TABS.map(([id,n,p])=>`<button class="${tab===id?'on':''}" data-tab="${id}"><svg viewBox="0 0 24 24"><path d="${p}"/></svg>${n}</button>`).join('');}
 $('#tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;tab=b.dataset.tab;render();});
-function render(){renderTabs();$('#hdate').textContent=jstr(todayISO(),true);const m=$('#main');m.scrollTop=0;
- if(S.live){$('#title').textContent='تمرین';m.innerHTML=viewLive();return;}
+let lastView=null;
+function render(){renderTabs();$('#hdate').textContent=jstr(todayISO(),true);const m=$('#main');const view=S.live?'live:'+S.live.i:tab;const keep=view===lastView?m.scrollTop:0;lastView=view;
+ if(S.live){$('#title').textContent='تمرین';m.innerHTML=viewLive();m.scrollTop=keep;return;}
  $('#title').textContent=TABS.find(t=>t[0]===tab)[1];
- m.innerHTML=({today:viewToday,lib:viewLib,food:viewFood,body:viewBody,hist:viewHist,set:viewSet})[tab]();}
+ m.innerHTML=({today:viewToday,lib:viewLib,food:viewFood,body:viewBody,hist:viewHist,set:viewSet})[tab]();m.scrollTop=keep;}
 
 function weekStats(){const t=todayISO(),d=dow(t);const off=(d+1)%7;/* week starts Saturday */const start=addDays(t,-off);const days=[];for(let i=0;i<7;i++)days.push(addDays(start,i));
  const gym=S.sessions.filter(s=>days.includes(s.date)).length,sw=S.activities.filter(a=>days.includes(a.date)&&(a.type==='swim'||a.type==='tennis')).length,ride=S.activities.filter(a=>days.includes(a.date)&&a.type==='ride').length;return {gym,sw,ride,days};}
