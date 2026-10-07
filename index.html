@@ -150,7 +150,7 @@ details summary{cursor:pointer;font-weight:700}
 .rate button span{font-size:10px;color:var(--muted)}
 .rate button.on{border-color:var(--accent);background:var(--surface)}
 .rate button.on span{color:var(--accent)}
-.mg{display:grid;grid-template-columns:64px 1fr 44px;gap:8px;align-items:center;font-size:13px;padding:3px 0}
+.mg{display:grid;grid-template-columns:minmax(64px,110px) 1fr 44px;gap:8px;align-items:center;font-size:13px;padding:3px 0}
 .mg .bar{height:8px;background:var(--surface2);border-radius:4px;overflow:hidden}.mg .bar i{display:block;height:100%}
 .mg b{font-variant-numeric:tabular-nums;text-align:left}
 .chk{display:flex;flex-direction:column;gap:6px;margin-top:10px}
@@ -158,6 +158,8 @@ details summary{cursor:pointer;font-weight:700}
 .chk button .box{width:24px;height:24px;border-radius:7px;border:2px solid var(--line);flex:none;display:flex;align-items:center;justify-content:center}
 .chk button .box .ic{width:16px;height:16px;margin:0;color:var(--accent-fg)}
 .chk button.on{border-color:var(--good)}.chk button.on .box{background:var(--good);border-color:var(--good)}
+.chk button.off{border-color:var(--bad);color:var(--muted)}.chk button.off .box{background:var(--bad);border-color:var(--bad);color:#fff;font-size:14px;font-weight:700}
+.wd.mig{box-shadow:inset 0 -3px 0 var(--bad)}
 .wk{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:8px}
 .wd{background:var(--surface2);border-radius:8px;padding:6px 0;text-align:center;font-size:11px;color:var(--muted);display:flex;flex-direction:column;gap:2px}
 .wd b{font-size:14px;color:var(--fg);font-variant-numeric:tabular-nums}
@@ -439,7 +441,7 @@ function viewToday(){const w=nextWorkout(),ws=weekStats(),lastM=S.measures.slice
  const doneToday=S.sessions.some(s=>s.date===todayISO()),actToday=S.activities.find(a=>a.date===todayISO());
  return `<div class="view">
  ${(()=>{const pw=progWeek();return pw.start?`<div class="card" style="padding:10px 14px"><div class="row"><span class="grow"><b>هفتهٔ ${fa(pw.n)}</b> از برنامهٔ ۱۲ هفته‌ای${pw.deload?' · <span class="pill swim">هفتهٔ سبک</span>':''}</span><span class="muted">شروع ${jstr(pw.start)}</span></div><div class="progress" style="margin-top:6px"><i style="width:${Math.min(100,pw.n/12*100)}%;background:var(--swim)"></i></div>${pw.deload?'<p class="muted" style="margin:6px 0 0">این هفته وزنه‌ها ۱۰٪ سبک‌تر پیشنهاد می‌شود تا بدن ریکاوری کند. تکرارها همان، فرم تمیز.</p>':''}</div>`:'';})()}
- <div class="card"><div class="row"><h2 class="grow">${ic('cal')}این هفته</h2><button class="pill ${nutScore(todayISO())>=5?'good':''}" data-goto="food" style="min-height:0">${ic('food')}تغذیه ${fa(nutScore(todayISO()))}/۷</button><span class="pill ${ws.gym>=3?'good':''}">${ic('dumbbell')}${fa(ws.gym)}/۳</span><span class="pill ${ws.sw>=1?'swim':''}">${ic('swim')}${fa(ws.sw)}/۱</span>${ws.ride?`<span class="pill">${ic('bike')}${fa(ws.ride)}</span>`:''}</div>
+ <div class="card"><div class="row"><h2 class="grow">${ic('cal')}این هفته</h2><button class="pill ${nutScore(todayISO())>=NGOOD?'good':''}" data-goto="food" style="min-height:0">${ic('food')}تغذیه ${fa(nutScore(todayISO()))}/${fa(NCHECKS.length)}</button><span class="pill ${ws.gym>=3?'good':''}">${ic('dumbbell')}${fa(ws.gym)}/۳</span><span class="pill ${ws.sw>=1?'swim':''}">${ic('swim')}${fa(ws.sw)}/۱</span>${ws.ride?`<span class="pill">${ic('bike')}${fa(ws.ride)}</span>`:''}</div>
  <div class="progress"><i style="width:${Math.min(100,(ws.gym+ws.sw)/4*100)}%"></i></div>
  <p class="muted" style="margin:8px 0 0">هفته از شنبه شروع می‌شود. هدف: ۳ جلسه باشگاه + ۱ جلسه شنا یا تنیس. رکاب‌زدن سربالایی برگشت هم کاردیو حساب می‌شود؛ اگر شنا نرسیدی، همین کافی است.</p></div>
  ${doneToday?`<div class="card"><h2>${ic('check')}تمرین امروز ثبت شد</h2><p class="muted">استراحت کن، آب بخور، پروتئین یادت نرود. فردا روز استراحت است.</p></div>`:''}
@@ -498,6 +500,12 @@ function viewHist(){const t=todayISO();const start=addDays(t,-((dow(t)+1)%7)-7*5
  <div class="card"><div class="row"><h2 class="grow">${ic('cal')}شش هفتهٔ اخیر</h2><span class="pill ${streak?'good':''}">${fa(streak)} هفتهٔ کامل پشت سر هم</span></div>
  <div class="cal">${['ش','ی','د','س','چ','پ','ج'].map(x=>`<div class="h">${x}</div>`).join('')}${cells.join('')}</div>
  <div class="row" style="margin-top:8px;font-size:12px"><span class="pill" style="color:var(--accent)">باشگاه</span><span class="pill swim">شنا/تنیس</span><span class="pill" style="border-color:var(--swim)">رکاب</span><span class="pill">استراحت</span></div></div>
+ ${(()=>{const days=[];for(let i=0;i<28;i++){const d=addDays(t,-i);if(nutTouched(d))days.push(d);}if(!days.length)return '';
+  const rows=NCHECKS.map(([k,label])=>{let y=0,nn=0;days.forEach(d=>{const v=nutDay(d)[k];if(v===true)y++;else if(v===false)nn++;});const tot=y+nn;return {label,y,nn,pct:tot?Math.round(y/tot*100):null};}).filter(r=>r.pct!==null).sort((a,b)=>a.pct-b.pct);
+  const mig=days.filter(d=>nutDay(d).migraine);const avg=arr=>arr.length?(arr.reduce((a,d)=>a+nutScore(d),0)/arr.length).toFixed(1):null;const nm=days.filter(d=>!nutDay(d).migraine);
+  return `<div class="card"><h2>${ic('food')}تغذیه، ${fa(days.length)} روز اخیر</h2>${rows.map(r=>`<div class="mg"><span style="font-size:12px;line-height:1.3">${r.label.split('(')[0].split('؛')[0].split(':')[0]}</span><div class="bar"><i style="width:${r.pct}%;background:${r.pct>=70?'var(--good)':r.pct>=40?'var(--accent)':'var(--bad)'}"></i></div><b>${fa(r.pct)}٪</b></div>`).join('')}
+  ${mig.length?`<p class="muted" style="margin:8px 0 0">${ic('warn')}سردرد در ${fa(mig.length)} روز. میانگین رعایت در روزهای سردرد ${fa(avg(mig))}، در بقیهٔ روزها ${fa(avg(nm)||'—')}. ${mig.length>=3&&avg(nm)&&+avg(mig)<+avg(nm)?'الگو همان است که انتظار داشتیم: روزهای کم‌رعایت، سردرد بیشتر.':''}</p>`:''}
+  <p class="muted" style="margin:6px 0 0;font-size:12px">پایین‌ترین‌ها اول. درصد از روزهایی حساب می‌شود که ✓ یا ✗ زده‌ای.</p></div>`;})()}
  <div class="card"><h2>${ic('user')}ست‌های هر عضله، این هفته</h2>${mgHtml}<p class="muted" style="margin:8px 0 0">عدد دوم حداقل ست هفتگی برای رشد است. رکاب‌زدن تا باشگاه جداگانه پا را کار می‌کند و این‌جا شمرده نمی‌شود.</p></div>
  <div class="card"><h2>${ic('flame')}پیشرفت وزنه‌ها</h2>${best||'<p class="muted">بعد از اولین جلسه پر می‌شود.</p>'}</div>
  <div class="card"><h2>${ic('info')}رضایت از حرکت‌ها</h2>${rates||'<p class="muted">بعد از امتیاز دادن در تمرین پر می‌شود. حرکت‌هایی که مدام امتیاز پایین می‌گیرند را عوض می‌کنیم.</p>'}</div>
@@ -532,27 +540,49 @@ function viewSet(){return `<div class="view">
 
 
 /* ---------- nutrition ---------- */
-const NCHECKS=[['p1','پروتئین در صبحانه (۲ تخم‌مرغ یا معادل)','egg'],['p2','پروتئین در ناهار (یک کف دست)','egg'],['p3','پروتئین در شام (تن، تخم‌مرغ، مرغ)','egg'],['order','اول پروتئین و سبزی، بعد برنج/نان؛ تا «گرسنه نیستم» نه سیرِ سیر','list'],['water','آب ۲ لیتر (بطری روی میز، یک لیوان قبل هر وعده)','drop'],['oil','روغن و کره نصف؛ سرخ‌کردنی شناور نه','warn'],['sweet','شیرینی زیر سقف: ۲ خرما یا ۱ قاشق عسل/شیره، نه هر دو','flame']];
+const NCHECKS=[
+ ['p1','پروتئین در صبحانه (۲ تخم‌مرغ یا معادل)'],
+ ['p2','پروتئین در ناهار (یک کف دست)'],
+ ['p3','پروتئین در شام (تن، تخم‌مرغ، مرغ)'],
+ ['order','اول پروتئین و سبزی، بعد برنج/نان؛ تا «گرسنه نیستم» نه سیرِ سیر'],
+ ['gap','فاصلهٔ وعده‌ها حداکثر ۴ ساعت؛ هیچ وعده‌ای حذف نشد'],
+ ['pre','میان‌وعدهٔ قبل از باشگاه (موز/خرما + ماست یا شیر)'],
+ ['veg','سبزی یا سالاد در دو وعده'],
+ ['water','آب ۲ لیتر (روز باشگاه ۲٫۵)'],
+ ['oil','روغن و کره نصف؛ سرخ‌کردنی شناور نه'],
+ ['sweet','شیرینی زیر سقف: ۲ خرما یا ۱ قاشق عسل/شیره'],
+ ['fruit','میوه ۲ تا ۳ تا، پخش در روز'],
+ ['drink','بدون نوشیدنی شیرین (نوشابه، آبمیوه، شربت)'],
+ ['tea','چای به تعداد ثابت هر روز، بدون شیرینی اضافه'],
+];
+const NGOOD=9;
+const NFLAGS=[['migraine','سردرد / میگرن داشتم','warn'],['hungry','گرسنگی شدید یا بی‌حالی','warn'],['cheat','وعدهٔ بیرون / مهمانی','food']];
 const NGUIDE=[
  ['چهار تغییر اصلی (۸۰٪ نتیجه)',['نان و برنج تا «دیگر گرسنه نیستم»، نه سیرِ سیر. ترتیب: اول پروتئین و سبزی، بعد برنج یا نان. سقف: ناهار یک کفگیر پر، شام نصف نان فرانسوی، صبحانه یک‌سوم بربری.','پروتئین در هر سه وعده، هر وعده یک کف دست بدون انگشت. صبحانه ۲ تخم‌مرغ، ناهار گوشت/مرغ بیشتر از قابلمه یا یک کاسه ماست، شام تن ماهی/تخم‌مرغ/مرغ به‌جای پنیر کم.','روغن و کره نصف. ماهی و مرغ در فر یا با یک قاشق روغن. برنج بدون روغن اضافه و بدون کرهٔ رویش. ته‌دیگ فقط آخر هفته. این یک درخواست مشخص از آشپز خانه است، نه تغییر منو.','آب ۲ تا ۲٫۵ لیتر. یک لیوان قبل از هر وعده. بخشی از «سیر نشدن» تشنگی است.']],
  ['شیرینی‌ها، بدون حذف',['خرما، عسل و شیرهٔ انگور همه قند هستند. سقف روزانه ۲ خرما یا ۱ قاشق عسل/شیره، یکی نه همه.','چای‌های بعدی بدون شیرینی.','میوهٔ فصل ۲ تا ۳ تا در روز، نه ۴ تا ۵ تا در یک نشست.','کیک و نوشیدنی شیرین همان چند روز یک بار، آگاهانه و بعد از غذا.','تخمه، آجیل، چیپس: یک مشت در ظرف کوچک، نه از توی پاکت.']],
  ['باشگاه ساعت ۲ و ناهار',['با شکم پر از برنج اسکوات سخت و خواب‌آور می‌شود.','پیشنهادی: ۱۲:۳۰ میان‌وعدهٔ سبک (موز یا ۲ خرما + ماست یا شیر)، باشگاه ۲، ناهار اصلی ۳:۳۰ تا ۴. بهترین زمان پروتئین و برنج همین است.','یا ناهار ۱۲ و سبک‌تر، باشگاه ۲.']],
  ['آماده‌سازی هفتگی (۱۵ دقیقه)',['یکشنبه ۱۰ تخم‌مرغ آب‌پز در یخچال.','۴ تا ۵ کنسرو تن ماهی در آب در کابینت.','ماست کم‌چرب یا یونانی و پنیر کم‌نمک همیشه در یخچال.','خیار، گوجه، کاهوی شسته در ظرف دربسته؛ سالاد بدون سس در ۲ دقیقه.']],
  ['یک روز نمونه',['۹: ۲ تخم‌مرغ با یک قاشق روغن، یک‌سوم بربری، پنیر، گوجه/خیار، چای. نصف قاشق عسل اگر خواستی.','۱۲:۳۰: موز + یک لیوان ماست یا شیر.','۲: باشگاه، آب در طول تمرین.','۳:۳۰ تا ۴: ناهار. اول خورش با گوشت بیشتر یا مرغ و سالاد، بعد یک کفگیر برنج.','۶: میوه یا یک مشت آجیل، چای.','۸:۳۰: شام. نصف نان فرانسوی + تن ماهی/تخم‌مرغ/مرغ + کاهو و گوجه؛ یا ماهی فر و سالاد.','بعد شام: ۲ خرما با چای، پایان.']],
+ ['میگرن و گرسنگی',['گرسنگی، فاصلهٔ زیاد وعده‌ها و کم‌آبی از محرک‌های اصلی میگرن‌اند. کار ما «کم‌خوردن» نیست؛ «کمتر برنج، بیشتر پروتئین» است تا قند خون صاف بماند.','فاصلهٔ وعده‌ها حداکثر ۴ ساعت: ۹، ۱۲:۳۰، ۴، ۶:۳۰، ۹. میان‌وعدهٔ قبل از باشگاه اجباری است.','آب ۲ لیتر، روز باشگاه ۲٫۵. تنها محرکی که با یک حرکت حذف می‌شود.','کربوهیدرات را پله‌پله کم کن: هفتهٔ اول فقط ترتیب بشقاب و پروتئین؛ از هفتهٔ دوم برنج به یک کفگیر.','۲ خرما را حذف نکن، به‌خصوص کنار چای عصر؛ ابزار پیشگیری است.','چای را به تعداد ثابت نگه دار؛ قطع ناگهانی کافئین سردرد می‌آورد.','اگر در دو هفتهٔ اول سردرد بیشتر شد: یک میان‌وعدهٔ پروتئین‌دار اضافه کن و برنج را برگردان. اگر میگرن زیاد یا شدید است، پزشک؛ کاهش وزن باید آرام‌تر و تحت نظر باشد.']],
  ['انتظار و سنجش',['هدف ۰٫۴ تا ۰٫۶ کیلو در هفته، ۵ تا ۷ کیلو در سه ماه، بیشترش از شکم. سریع‌تر نرو؛ همان‌جا صورت لاغر می‌شود.','هفته‌ای یک بار وزن (صبح ناشتا، همان روز)، دو هفته یک بار دور شکم.','دو هفته بدون تغییر: برنج ناهار نصف کفگیر کمتر. سریع‌تر از ۰٫۸ در هفته: یک نان یا یک میوه اضافه.','گرسنگی شدید، بی‌حالی در تمرین یا بدخوابی یعنی زیاد کم کرده‌ای؛ برگرد عقب.','دو هفتهٔ اول فقط چهار تغییر اصلی؛ بقیه بعدش.']],
 ];
 function nutDay(d){return S.nutrition[d]||{};}
-function nutScore(d){const n=nutDay(d);return NCHECKS.filter(([k])=>n[k]).length;}
-function viewFood(){const t=todayISO(),n=nutDay(t),sc=nutScore(t);const wk=weekStats();const wd=wk.days.filter(d=>d<=t).map(d=>({d,s:nutScore(d)}));const good=wd.filter(x=>x.s>=5).length;
- let streak=0;for(let i=0;;i++){const d=addDays(t,-i);if(nutScore(d)>=5)streak++;else if(i>0||nutScore(d)<5&&i===0&&false)break;else break;}
+function nutScore(d){const n=nutDay(d);return NCHECKS.filter(([k])=>n[k]===true).length;}
+function nutMiss(d){const n=nutDay(d);return NCHECKS.filter(([k])=>n[k]===false).length;}
+function nutTouched(d){const n=nutDay(d);return NCHECKS.some(([k])=>n[k]===true||n[k]===false)||NFLAGS.some(([k])=>n[k]);}
+function viewFood(){const t=todayISO(),n=nutDay(t),sc=nutScore(t),ms=nutMiss(t);const wk=weekStats();const wd=wk.days.filter(d=>d<=t).map(d=>({d,s:nutScore(d)}));const good=wd.filter(x=>x.s>=NGOOD).length;
+ let streak=0;for(let i=0;i<365;i++){const d=addDays(t,-i);if(nutScore(d)>=NGOOD)streak++;else break;}
  return `<div class="view">
- <div class="card"><div class="row"><h2 class="grow">${ic('food')}امروز، ${jstr(t)}</h2><span class="pill ${sc>=5?'good':''}">${fa(sc)}/${fa(NCHECKS.length)}</span></div>
- <div class="progress"><i style="width:${sc/NCHECKS.length*100}%;background:${sc>=5?'var(--good)':'var(--accent)'}"></i></div>
- <div class="chk">${NCHECKS.map(([k,label,icn])=>`<button class="${n[k]?'on':''}" data-nut="${k}"><span class="box">${n[k]?ic('check'):''}</span><span class="grow">${label}</span></button>`).join('')}</div>
- <p class="muted" style="margin:8px 0 0">۵ از ۷ یعنی روز خوب. کمال‌گرایی لازم نیست؛ پیوستگی لازم است.</p></div>
+ <div class="card"><div class="row"><h2 class="grow">${ic('food')}امروز، ${jstr(t)}</h2><span class="pill ${sc>=NGOOD?'good':''}">${fa(sc)} ✓</span>${ms?`<span class="pill bad">${fa(ms)} ✗</span>`:''}</div>
+ <div class="progress"><i style="width:${sc/NCHECKS.length*100}%;background:${sc>=NGOOD?'var(--good)':'var(--accent)'}"></i></div>
+ <p class="muted" style="margin:6px 0 0;font-size:12px">یک لمس ✓ رعایت شد، دو لمس ✗ رعایت نشد، سه لمس خالی. ✗ها برای تاریخچه مهم‌اند؛ صادق باش.</p>
+ <div class="chk">${NCHECKS.map(([k,label])=>`<button class="${n[k]===true?'on':n[k]===false?'off':''}" data-nut="${k}"><span class="box">${n[k]===true?ic('check'):n[k]===false?'✕':''}</span><span class="grow">${label}</span></button>`).join('')}</div>
+ <div class="muted" style="margin:12px 0 4px">علامت‌های امروز (برای ربط دادن به تاریخچه)</div>
+ <div class="row">${NFLAGS.map(([k,label,icn])=>`<button class="btn small ${n[k]?'':'ghost'}" data-flag="${k}" style="${n[k]?'border-color:var(--warn);color:var(--warn)':''}">${ic(icn)}${label}</button>`).join('')}</div>
+ <p class="muted" style="margin:8px 0 0">${fa(NGOOD)} از ${fa(NCHECKS.length)} یعنی روز خوب. کمال‌گرایی لازم نیست؛ پیوستگی لازم است.</p></div>
  <div class="card"><div class="row"><h2 class="grow">${ic('cal')}این هفته</h2><span class="pill ${good>=5?'good':''}">${fa(good)} روز خوب</span>${streak>1?`<span class="pill good">${fa(streak)} روز پشت سر هم</span>`:''}</div>
- <div class="wk">${wk.days.map(d=>{const s2=d<=t?nutScore(d):null;return `<div class="wd ${s2===null?'fut':s2>=5?'good':s2>0?'part':''} ${d===t?'today':''}"><span>${['ش','ی','د','س','چ','پ','ج'][(dow(d)+1)%7]}</span><b>${s2===null?'·':fa(s2)}</b></div>`;}).join('')}</div></div>
- ${NGUIDE.map(([h,items],i)=>`<div class="card"><details ${i===0?'open':''}><summary>${ic(['flame','flame','timer','list','cal','chart'][i])}${h}</summary><ul class="tips" style="margin-top:8px">${items.map(x=>`<li>${x}</li>`).join('')}</ul></details></div>`).join('')}
+ <div class="wk">${wk.days.map(d=>{const s2=d<=t?nutScore(d):null;return `<div class="wd ${s2===null?'fut':s2>=NGOOD?'good':s2>0?'part':''} ${d===t?'today':''} ${nutDay(d).migraine?'mig':''}"><span>${['ش','ی','د','س','چ','پ','ج'][(dow(d)+1)%7]}</span><b>${s2===null?'·':fa(s2)}</b></div>`;}).join('')}</div></div>
+ ${NGUIDE.map(([h,items],i)=>`<div class="card"><details ${i===0?'open':''}><summary>${ic(['flame','flame','timer','list','cal','warn','chart'][i])}${h}</summary><ul class="tips" style="margin-top:8px">${items.map(x=>`<li>${x}</li>`).join('')}</ul></details></div>`).join('')}
  </div>`;}
 
 /* ---------- live workout ---------- */
@@ -619,7 +649,8 @@ function confirmBox(msg,yes){const o=$('#overlay');o.innerHTML=`<div class="time
 /* ---------- bindings for tabs ---------- */
 function tabClick(ev){const m=$('#main');{const b=ev.target.closest('button');if(!b)return;
   if(b.dataset.goto){tab=b.dataset.goto;render();return;}
-  if(b.dataset.nut){const t=todayISO();S.nutrition[t]=S.nutrition[t]||{};S.nutrition[t][b.dataset.nut]=!S.nutrition[t][b.dataset.nut];save();render();return;}
+  if(b.dataset.nut){const t=todayISO();S.nutrition[t]=S.nutrition[t]||{};const cur=S.nutrition[t][b.dataset.nut];S.nutrition[t][b.dataset.nut]=cur===true?false:cur===false?null:true;save();render();return;}
+  if(b.dataset.flag){const t=todayISO();S.nutrition[t]=S.nutrition[t]||{};S.nutrition[t][b.dataset.flag]=!S.nutrition[t][b.dataset.flag];save();render();return;}
   if(b.dataset.start){startWorkout(b.dataset.start,b.dataset.short==='1');}
   if(b.dataset.act){const t=todayISO();S.activities=S.activities.filter(a=>a.date!==t);S.activities.push({date:t,type:b.dataset.act});save();render();toast('ثبت شد');}
   if(b.dataset.ex){const c=document.createElement('div');c.innerHTML=exDetail(b.dataset.ex);const card=c.firstElementChild;card.style.marginBottom='12px';m.prepend(card);m.scrollTop=0;}
