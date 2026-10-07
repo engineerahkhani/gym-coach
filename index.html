@@ -166,6 +166,8 @@ details summary{cursor:pointer;font-weight:700}
 .wd.good{background:var(--good);color:#fff}.wd.good b{color:#fff}
 .wd.part{border:1px solid var(--accent)}
 .wd.fut{opacity:.5}.wd.today{outline:2px solid var(--fg)}
+.flog{display:flex;flex-direction:column;gap:4px;margin-top:8px;font-size:14px}
+.flog .row{border-top:1px solid var(--line);padding-top:4px}
 .progress{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden}
 .progress i{display:block;height:100%;background:var(--accent)}
 .alert{border-right:3px solid var(--warn);padding-right:10px;font-size:14px}
@@ -505,7 +507,9 @@ function viewHist(){const t=todayISO();const start=addDays(t,-((dow(t)+1)%7)-7*5
   const mig=days.filter(d=>nutDay(d).migraine);const avg=arr=>arr.length?(arr.reduce((a,d)=>a+nutScore(d),0)/arr.length).toFixed(1):null;const nm=days.filter(d=>!nutDay(d).migraine);
   return `<div class="card"><h2>${ic('food')}تغذیه، ${fa(days.length)} روز اخیر</h2>${rows.map(r=>`<div class="mg"><span style="font-size:12px;line-height:1.3">${r.label.split('(')[0].split('؛')[0].split(':')[0]}</span><div class="bar"><i style="width:${r.pct}%;background:${r.pct>=70?'var(--good)':r.pct>=40?'var(--accent)':'var(--bad)'}"></i></div><b>${fa(r.pct)}٪</b></div>`).join('')}
   ${mig.length?`<p class="muted" style="margin:8px 0 0">${ic('warn')}سردرد در ${fa(mig.length)} روز. میانگین رعایت در روزهای سردرد ${fa(avg(mig))}، در بقیهٔ روزها ${fa(avg(nm)||'—')}. ${mig.length>=3&&avg(nm)&&+avg(mig)<+avg(nm)?'الگو همان است که انتظار داشتیم: روزهای کم‌رعایت، سردرد بیشتر.':''}</p>`:''}
-  <p class="muted" style="margin:6px 0 0;font-size:12px">پایین‌ترین‌ها اول. درصد از روزهایی حساب می‌شود که ✓ یا ✗ زده‌ای.</p></div>`;})()}
+  <p class="muted" style="margin:6px 0 0;font-size:12px">پایین‌ترین‌ها اول. درصد از روزهایی حساب می‌شود که ✓ یا ✗ زده‌ای.</p></div>
+  ${(()=>{const L=[];for(let i=0;i<14;i++){const d=addDays(t,-i);const n=nutDay(d);if(n.log&&n.log.length)L.push({d,n});}if(!L.length)return '';
+   return `<div class="card"><h2>${ic('list')}ریزخوراکی‌های ثبت‌شده</h2>${L.map(({d,n})=>`<div style="border-top:1px solid var(--line);padding:6px 0;font-size:14px"><div class="row"><b class="grow">${jstr(d)}</b>${n.migraine?'<span class="pill bad">سردرد</span>':''}<span class="pill">${fa(nutScore(d))}✓</span></div>${n.log.map(x=>`<div><span class="muted" style="font-size:12px">${fa(x.t)}</span> ${x.txt}</div>`).join('')}</div>`).join('')}<p class="muted" style="margin:8px 0 0;font-size:12px">این فهرست را هر دو هفته با هم مرور می‌کنیم: چی اوکی بود، چی اضافه، چی با سردرد هم‌زمان شد.</p></div>`;})()}`;})()}
  <div class="card"><h2>${ic('user')}ست‌های هر عضله، این هفته</h2>${mgHtml}<p class="muted" style="margin:8px 0 0">عدد دوم حداقل ست هفتگی برای رشد است. رکاب‌زدن تا باشگاه جداگانه پا را کار می‌کند و این‌جا شمرده نمی‌شود.</p></div>
  <div class="card"><h2>${ic('flame')}پیشرفت وزنه‌ها</h2>${best||'<p class="muted">بعد از اولین جلسه پر می‌شود.</p>'}</div>
  <div class="card"><h2>${ic('info')}رضایت از حرکت‌ها</h2>${rates||'<p class="muted">بعد از امتیاز دادن در تمرین پر می‌شود. حرکت‌هایی که مدام امتیاز پایین می‌گیرند را عوض می‌کنیم.</p>'}</div>
@@ -569,7 +573,7 @@ const NGUIDE=[
 function nutDay(d){return S.nutrition[d]||{};}
 function nutScore(d){const n=nutDay(d);return NCHECKS.filter(([k])=>n[k]===true).length;}
 function nutMiss(d){const n=nutDay(d);return NCHECKS.filter(([k])=>n[k]===false).length;}
-function nutTouched(d){const n=nutDay(d);return NCHECKS.some(([k])=>n[k]===true||n[k]===false)||NFLAGS.some(([k])=>n[k]);}
+function nutTouched(d){const n=nutDay(d);return NCHECKS.some(([k])=>n[k]===true||n[k]===false)||NFLAGS.some(([k])=>n[k])||(n.log&&n.log.length>0);}
 function viewFood(){const t=todayISO(),n=nutDay(t),sc=nutScore(t),ms=nutMiss(t);const wk=weekStats();const wd=wk.days.filter(d=>d<=t).map(d=>({d,s:nutScore(d)}));const good=wd.filter(x=>x.s>=NGOOD).length;
  let streak=0;for(let i=0;i<365;i++){const d=addDays(t,-i);if(nutScore(d)>=NGOOD)streak++;else break;}
  return `<div class="view">
@@ -579,7 +583,10 @@ function viewFood(){const t=todayISO(),n=nutDay(t),sc=nutScore(t),ms=nutMiss(t);
  <div class="chk">${NCHECKS.map(([k,label])=>`<button class="${n[k]===true?'on':n[k]===false?'off':''}" data-nut="${k}"><span class="box">${n[k]===true?ic('check'):n[k]===false?'✕':''}</span><span class="grow">${label}</span></button>`).join('')}</div>
  <div class="muted" style="margin:12px 0 4px">علامت‌های امروز (برای ربط دادن به تاریخچه)</div>
  <div class="row">${NFLAGS.map(([k,label,icn])=>`<button class="btn small ${n[k]?'':'ghost'}" data-flag="${k}" style="${n[k]?'border-color:var(--warn);color:var(--warn)':''}">${ic(icn)}${label}</button>`).join('')}</div>
- <p class="muted" style="margin:8px 0 0">${fa(NGOOD)} از ${fa(NCHECKS.length)} یعنی روز خوب. کمال‌گرایی لازم نیست؛ پیوستگی لازم است.</p></div>
+ <p class="muted" style="margin:8px 0 0">${fa(NGOOD)} از ${fa(NCHECKS.length)} یعنی روز خوب. کمال‌گرایی لازم نیست؛ پیوستگی لازم است.</p>
+ <div class="muted" style="margin:14px 0 4px">${ic('list')}چی خوردم؟ (ریزِ چیزهای خارج از برنامه یا مشکوک، برای بررسی بعدی)</div>
+ <div class="row" style="flex-wrap:nowrap"><input type="text" id="fl-txt" class="grow" placeholder="مثلاً: ۵ گردو و یک خوشه انگور" autocomplete="off" enterkeyhint="done"><button class="btn primary small" id="fl-add" style="min-height:44px">ثبت</button></div>
+ ${(n.log||[]).length?`<div class="flog">${n.log.map((x,i)=>`<div class="row" style="flex-wrap:nowrap"><span class="muted" style="font-variant-numeric:tabular-nums;font-size:12px">${fa(x.t)}</span><span class="grow">${x.txt}</span><button class="btn small ghost" data-fldel="${i}">✕</button></div>`).join('')}</div>`:''}</div>
  <div class="card"><div class="row"><h2 class="grow">${ic('cal')}این هفته</h2><span class="pill ${good>=5?'good':''}">${fa(good)} روز خوب</span>${streak>1?`<span class="pill good">${fa(streak)} روز پشت سر هم</span>`:''}</div>
  <div class="wk">${wk.days.map(d=>{const s2=d<=t?nutScore(d):null;return `<div class="wd ${s2===null?'fut':s2>=NGOOD?'good':s2>0?'part':''} ${d===t?'today':''} ${nutDay(d).migraine?'mig':''}"><span>${['ش','ی','د','س','چ','پ','ج'][(dow(d)+1)%7]}</span><b>${s2===null?'·':fa(s2)}</b></div>`;}).join('')}</div></div>
  ${NGUIDE.map(([h,items],i)=>`<div class="card"><details ${i===0?'open':''}><summary>${ic(['flame','flame','timer','list','cal','warn','chart'][i])}${h}</summary><ul class="tips" style="margin-top:8px">${items.map(x=>`<li>${x}</li>`).join('')}</ul></details></div>`).join('')}
@@ -650,6 +657,8 @@ function confirmBox(msg,yes){const o=$('#overlay');o.innerHTML=`<div class="time
 function tabClick(ev){const m=$('#main');{const b=ev.target.closest('button');if(!b)return;
   if(b.dataset.goto){tab=b.dataset.goto;render();return;}
   if(b.dataset.nut){const t=todayISO();S.nutrition[t]=S.nutrition[t]||{};const cur=S.nutrition[t][b.dataset.nut];S.nutrition[t][b.dataset.nut]=cur===true?false:cur===false?null:true;save();render();return;}
+  if(b.id==='fl-add'){const inp=$('#fl-txt'),v=(inp.value||'').trim();if(!v){inp.focus();return;}const t=todayISO();S.nutrition[t]=S.nutrition[t]||{};(S.nutrition[t].log=S.nutrition[t].log||[]).push({t:new Date().toTimeString().slice(0,5),txt:v});save();render();toast('ثبت شد');return;}
+  if(b.dataset.fldel!==undefined){const t=todayISO();S.nutrition[t].log.splice(+b.dataset.fldel,1);save();render();return;}
   if(b.dataset.flag){const t=todayISO();S.nutrition[t]=S.nutrition[t]||{};S.nutrition[t][b.dataset.flag]=!S.nutrition[t][b.dataset.flag];save();render();return;}
   if(b.dataset.start){startWorkout(b.dataset.start,b.dataset.short==='1');}
   if(b.dataset.act){const t=todayISO();S.activities=S.activities.filter(a=>a.date!==t);S.activities.push({date:t,type:b.dataset.act});save();render();toast('ثبت شد');}
@@ -669,6 +678,7 @@ function tabChange(ev){{const t=ev.target;if(t.id==='p-h'){S.profile.height=+t.v
 $('#main').addEventListener('click',ev=>S.live?liveClick(ev):tabClick(ev));
 $('#main').addEventListener('input',ev=>{if(S.live)liveInput(ev);});
 $('#main').addEventListener('change',ev=>{if(!S.live)tabChange(ev);else liveInput(ev);});
+$('#main').addEventListener('keydown',ev=>{if(ev.key==='Enter'&&ev.target.id==='fl-txt'){ev.preventDefault();$('#fl-add').click();}});
 
 load();render();
 if('serviceWorker' in navigator&&location.protocol.startsWith('http')&&!/claude\.ai|claudeusercontent/.test(location.host)){navigator.serviceWorker.register('./sw.js').catch(()=>{});}
