@@ -83,8 +83,9 @@ h2 .ic,h3 .ic{color:var(--accent);width:20px;height:20px}
 .stat div{background:var(--surface2);border-radius:10px;padding:8px;text-align:center}
 .stat b{display:block;font-size:20px;font-variant-numeric:tabular-nums}
 .stat span{font-size:12px;color:var(--muted)}
-input[type=number],input[type=text],input[type=date],select,textarea{width:100%;background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:10px;min-height:44px}
-textarea{min-height:90px;font-size:14px}
+input[type=number],input[type=text],input[type=date],select,textarea{width:100%;background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:10px;min-height:44px;font-size:16px}
+input,select,textarea{font-size:16px}
+textarea{min-height:90px;font-size:16px}
 label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);flex:1;min-width:0}
 .exlist{display:flex;flex-direction:column;gap:8px}
 .exitem{display:flex;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px;width:100%;text-align:right}
@@ -107,7 +108,7 @@ ul.tips li{margin-bottom:3px}
 .stp{direction:ltr;display:flex;align-items:center;background:var(--surface2);border:1px solid var(--line);border-radius:10px;height:44px;overflow:hidden}
 .stp button{width:28px;height:100%;border:0;background:none;color:var(--muted);font-size:20px;line-height:1;padding:0;flex:none}
 .stp button:active{background:var(--line)}
-.stp input{flex:1;min-width:0;width:100%;border:0;background:none;text-align:center;padding:0;height:100%;font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;border-radius:0}
+.stp input{flex:1;min-width:0;width:100%;border:0;background:none;text-align:center;padding:0;height:100%;font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;border-radius:0}
 .stp input:focus{outline:none;background:var(--surface)}
 .stp.dis{justify-content:center;color:var(--muted)}
 .setrow.ok .stp{border-color:var(--good)}
@@ -464,7 +465,7 @@ function render(){renderTabs();$('#hdate').textContent=jstr(todayISO(),true);con
 
 function weekStats(){const t=todayISO(),d=dow(t);const off=(d+1)%7;/* week starts Saturday */const start=addDays(t,-off);const days=[];for(let i=0;i<7;i++)days.push(addDays(start,i));
  const gym=S.sessions.filter(s=>days.includes(s.date)).length,sw=S.activities.filter(a=>days.includes(a.date)&&(a.type==='swim'||a.type==='tennis')).length,ride=S.activities.filter(a=>days.includes(a.date)&&a.type==='ride').length;return {gym,sw,ride,days};}
-function viewToday(){const w=nextWorkout(),ws=weekStats(),lastM=S.measures.slice().sort((a,b)=>a.date<b.date?-1:1).pop();
+function viewToday(){const w=nextWorkout(),ws=weekStats();const msAll=S.measures.slice().sort((a,b)=>a.date<b.date?-1:1);let lastM=msAll[msAll.length-1];if(lastM){const la=msAll.filter(m=>m.abd).pop();lastM=Object.assign({},lastM,{abd:lastM.abd||(la&&la.abd)||null});}
  const doneToday=S.sessions.some(s=>s.date===todayISO()),actToday=S.activities.find(a=>a.date===todayISO());
  return `<div class="view">
  ${(()=>{const pw=progWeek();return pw.start?`<div class="card" style="padding:10px 14px"><div class="row"><span class="grow"><b>هفتهٔ ${fa(pw.n)}</b> از برنامهٔ ۱۲ هفته‌ای${pw.deload?' · <span class="pill swim">هفتهٔ سبک</span>':''}</span><span class="muted">شروع ${jstr(pw.start)}</span></div><div class="progress" style="margin-top:6px"><i style="width:${Math.min(100,pw.n/12*100)}%;background:var(--swim)"></i></div>${pw.deload?'<p class="muted" style="margin:6px 0 0">این هفته وزنه‌ها ۱۰٪ سبک‌تر پیشنهاد می‌شود تا بدن ریکاوری کند. تکرارها همان، فرم تمیز.</p>':''}</div>`:'';})()}
@@ -480,6 +481,10 @@ function viewToday(){const w=nextWorkout(),ws=weekStats(),lastM=S.measures.slice
  <p class="muted" style="margin:8px 0 0">نسخهٔ کوتاه برای روزهای بی‌حوصله: فقط ۳ حرکت اول، ۲ ست. رفتن به باشگاه از بی‌نقص تمرین کردن مهم‌تر است.</p>
  <details style="margin-top:8px"><summary>ترتیب جلسه‌ها را عوض کن</summary><div class="row" style="margin-top:8px">${Object.keys(W).map(k=>`<button class="btn small" data-start="${k}" data-short="0">جلسهٔ ${k}</button>`).join('')}</div></details></div>
  <div class="card"><h2>${ic('flame')}فعالیت‌های دیگر</h2><div class="row"><button class="btn grow" data-act="swim">${ic('swim')}شنا</button><button class="btn grow" data-act="tennis">${ic('tennis')}تنیس</button></div><div class="row" style="margin-top:8px"><button class="btn grow" data-act="ride">${ic('bike')}رکاب تا باشگاه</button><button class="btn grow ghost" data-act="rest">${ic('bed')}استراحت</button></div></div>
+ ${lastM?(()=>{const t=todayISO();const dW=Math.round((new Date(t+'T12:00:00')-new Date(lastM.date+'T12:00:00'))/86400000);const lastAbd=S.measures.filter(m=>m.abd).sort((a,b)=>a.date<b.date?-1:1).pop();const dA=lastAbd?Math.round((new Date(t+'T12:00:00')-new Date(lastAbd.date+'T12:00:00'))/86400000):99;const dueW=7-dW,dueA=14-dA;const over=dueW<=0||dueA<=0;
+  return `<div class="card" style="${over?'border-color:var(--warn)':''}"><div class="row"><h2 class="grow">${ic('ruler')}اندازه‌گیری</h2>${over?`<button class="btn small primary" data-goto="body">${ic('plus')}ثبت کن</button>`:''}</div>
+  <div class="row" style="font-size:14px;gap:4px 14px"><span>وزن: <b>${dueW<=0?'<span style=\"color:var(--warn)\">موعدش رسیده</span>':fa(dueW)+' روز دیگر'}</b> <span class="muted">(آخرین: ${fa(dW)} روز پیش)</span></span><span>دور شکم: <b>${dueA<=0?'<span style=\"color:var(--warn)\">موعدش رسیده</span>':fa(dueA)+' روز دیگر'}</b> <span class="muted">(${lastAbd?fa(dA)+' روز پیش':'ثبت نشده'})</span></span></div>
+  <p class="muted" style="margin:6px 0 0;font-size:12px">وزن هفته‌ای یک بار، دور شکم هر دو هفته؛ همیشه صبح ناشتا بعد از دستشویی، همان روز هفته.</p></div>`;})():''}
  ${lastM?`<div class="card"><div class="row"><h2 class="grow">${ic('ruler')}آخرین اندازه‌ها</h2><span class="muted">${jstr(lastM.date)}</span></div>
  <div class="stat"><div><b>${fa(lastM.weight)}</b><span>کیلو</span></div><div><b>${fa(lastM.abd)}</b><span>دور شکم</span></div><div><b>${fa(bmi(lastM.weight))}</b><span>BMI</span></div></div></div>`:`<div class="card"><h2>${ic('ruler')}شروع: اندازه‌های امروزت را ثبت کن</h2><p class="muted" style="margin:0 0 8px">قد، وزن و دور شکم فقط روی همین گوشی ذخیره می‌شود. از تب «اندازه‌ها» وارد کن.</p><button class="btn primary" data-goto="body" style="width:100%">ثبت اندازه‌ها</button></div>`}
  </div>`;}
@@ -495,24 +500,24 @@ function exDetail(id){const ex=EX[id],last=lastSets(id);return `<div class="card
  ${last?`<p class="muted" style="margin:8px 0 0">آخرین اجرا (${jstr(last.date)}): ${last.sets.map(s=>fa(s.w||'')+(s.w?'×':'')+fa(s.r)).join(' ، ')}</p>`:''}
  <p class="muted" style="margin:8px 0 0">${ic('swap')}اگر دستگاه اشغال بود: <b>${EX[ex.alt].name}</b></p></div>`;}
 
-function viewBody(){const ms=S.measures.slice().sort((a,b)=>a.date<b.date?-1:1),h=S.profile.height||0;const empty=!ms.length;const first=empty?{weight:0,abd:0}:ms[0],last=empty?{weight:'',waist:'',abd:'',date:todayISO()}:ms[ms.length-1];
+function viewBody(){const ms=S.measures.slice().sort((a,b)=>a.date<b.date?-1:1),h=S.profile.height||0;const empty=!ms.length;const first=empty?{weight:0,abd:0}:ms[0],lastE=empty?{weight:'',waist:'',abd:'',date:todayISO()}:ms[ms.length-1];const lastA=ms.filter(m=>m.abd).pop()||{},lastWst=ms.filter(m=>m.waist).pop()||{};const last=Object.assign({},lastE,{abd:lastE.abd||lastA.abd||'',waist:lastE.waist||lastWst.waist||''});
  const whtr=h&&last.abd?(last.abd/h).toFixed(2):'—';const dW=(last.weight-first.weight).toFixed(1),dA=(last.abd-first.abd).toFixed(0);
  return `<div class="view">
  ${h?'':`<div class="card"><h2>${ic('user')}قدت را وارد کن</h2><div class="row"><label class="f">قد (سانتی‌متر)<input type="number" id="p-h" inputmode="numeric" placeholder="مثلاً ۱۷۸"></label></div></div>`}
  ${empty?'':`<div class="card"><h2>${ic('chart')}وضعیت فعلی</h2><div class="stat"><div><b>${fa(last.weight)}</b><span>وزن (کیلو)</span></div><div><b>${fa(last.waist)}</b><span>دور کمر</span></div><div><b>${fa(last.abd)}</b><span>دور شکم (ناف)</span></div></div>
  <div class="stat" style="margin-top:8px"><div><b>${fa(bmi(last.weight))}</b><span>BMI</span></div><div><b>${fa(whtr)}</b><span>شکم ÷ قد</span></div><div><b>${fa(h?Math.round(h*0.5):'—')}</b><span>هدف دور شکم</span></div></div>
  <p class="muted" style="margin:8px 0 0">نسبت شکم به قد زیر ۰٫۵ یعنی چربی شکمی در محدودهٔ سالم. تغییر از شروع: وزن ${fa(dW>0?'+'+dW:dW)} · شکم ${fa(dA>0?'+'+dA:dA)}</p></div>`}
- <div class="card"><h2>${ic('plus')}ثبت اندازهٔ جدید</h2><p class="muted" style="margin:0 0 8px">هر دو هفته یک بار، صبح ناشتا، بعد از دستشویی. متر از روی ناف، نفس عادی، بدون کشیدن شکم.</p>
+ <div class="card"><h2>${ic('plus')}ثبت اندازهٔ جدید</h2><p class="muted" style="margin:0 0 8px">وزن هر هفته، دور شکم هر دو هفته. صبح ناشتا، بعد از دستشویی. متر از روی ناف، نفس عادی، بدون کشیدن شکم. اگر فقط وزن داری، بقیه را خالی بگذار.</p>
  <div class="row"><label class="f">تاریخ<input type="date" id="m-date" value="${todayISO()}"></label></div>
  <div class="row" style="margin-top:8px"><label class="f">وزن<input type="number" id="m-w" step="0.1" inputmode="decimal" placeholder="${last.weight}"></label><label class="f">دور کمر<input type="number" id="m-waist" inputmode="decimal" placeholder="${last.waist||''}"></label><label class="f">دور شکم<input type="number" id="m-abd" inputmode="decimal" placeholder="${last.abd}"></label></div>
  <button class="btn primary" style="width:100%;margin-top:10px" id="m-save">ثبت</button></div>
  <div class="card"><h2>${ic('chart')}روند</h2>${chart(ms)}<div class="row" style="margin-top:6px"><span class="pill" style="color:var(--accent)">وزن</span><span class="pill swim">دور شکم</span></div></div>
- <div class="card"><h2>${ic('list')}همهٔ ثبت‌ها</h2>${ms.slice().reverse().map((m,i)=>`<div class="row" style="border-top:1px solid var(--line);padding:6px 0;font-size:14px"><span class="grow">${jstr(m.date)}</span><span>${fa(m.weight)} کیلو</span><span>کمر ${fa(m.waist)}</span><span>شکم ${fa(m.abd)}</span><button class="btn small ghost" data-delm="${m.date}">✕</button></div>`).join('')||'<p class="muted">هنوز چیزی ثبت نشده.</p>'}</div>
+ <div class="card"><h2>${ic('list')}همهٔ ثبت‌ها</h2>${ms.slice().reverse().map((m,i)=>`<div class="row" style="border-top:1px solid var(--line);padding:6px 0;font-size:14px"><span class="grow">${jstr(m.date)}</span><span>${fa(m.weight)} کیلو</span>${m.waist?`<span>کمر ${fa(m.waist)}</span>`:''}${m.abd?`<span>شکم ${fa(m.abd)}</span>`:''}<button class="btn small ghost" data-delm="${m.date}">✕</button></div>`).join('')||'<p class="muted">هنوز چیزی ثبت نشده.</p>'}</div>
  </div>`;}
 function chart(ms){if(ms.length<2)return `<p class="muted">بعد از دومین ثبت، نمودار نشان داده می‌شود.</p>`;
  const Wd=340,H=160,px=30,py=14;const xs=ms.map((m,i)=>px+i*(Wd-px-10)/(ms.length-1));
- const ser=(key,cls,dcls)=>{const vs=ms.map(m=>+m[key]);const lo=Math.min(...vs)-1,hi=Math.max(...vs)+1;const y=v=>py+(H-py-22)*(1-(v-lo)/(hi-lo));
-  return `<polyline class="${cls}" points="${vs.map((v,i)=>xs[i].toFixed(1)+','+y(v).toFixed(1)).join(' ')}"/>${vs.map((v,i)=>`<circle class="${dcls}" cx="${xs[i].toFixed(1)}" cy="${y(v).toFixed(1)}" r="3"/><text x="${xs[i].toFixed(1)}" y="${(y(v)-6).toFixed(1)}" text-anchor="middle">${fa(v)}</text>`).join('')}`;};
+ const ser=(key,cls,dcls)=>{const pts=ms.map((m,i)=>[i,+m[key]]).filter(x=>x[1]>0);if(pts.length<2)return '';const vs=pts.map(x=>x[1]),xs2=pts.map(x=>xs[x[0]]);const lo=Math.min(...vs)-1,hi=Math.max(...vs)+1;const y=v=>py+(H-py-22)*(1-(v-lo)/(hi-lo));
+  return `<polyline class="${cls}" points="${vs.map((v,i)=>xs2[i].toFixed(1)+','+y(v).toFixed(1)).join(' ')}"/>${vs.map((v,i)=>`<circle class="${dcls}" cx="${xs2[i].toFixed(1)}" cy="${y(v).toFixed(1)}" r="3"/><text x="${xs2[i].toFixed(1)}" y="${(y(v)-6).toFixed(1)}" text-anchor="middle">${fa(v)}</text>`).join('')}`;};
  return `<svg class="chart" viewBox="0 0 ${Wd} ${H}">${[0,1,2,3].map(i=>`<line class="grid" x1="${px}" x2="${Wd-10}" y1="${py+i*(H-py-22)/3}" y2="${py+i*(H-py-22)/3}"/>`).join('')}${ser('weight','l1','dot1')}${ser('abd','l2','dot2')}${ms.map((m,i)=>`<text x="${xs[i].toFixed(1)}" y="${H-4}" text-anchor="middle">${jshort(m.date)}</text>`).join('')}</svg>`;}
 
 function viewHist(){const t=todayISO();const start=addDays(t,-((dow(t)+1)%7)-7*5);const cells=[];for(let i=0;i<42;i++){const d=addDays(start,i);const s=S.sessions.find(x=>x.date===d),a=S.activities.find(x=>x.date===d);cells.push(`<div class="d ${s?'gym':a?(a.type==='rest'?'rest':a.type==='ride'?'ride':'swim'):''} ${d===t?'today':''}" title="${d}">${fa(toJalali(d).jd)}</div>`);}
@@ -699,7 +704,7 @@ function tabClick(ev){const m=$('#main');{const b=ev.target.closest('button');if
   if(b.dataset.act){const t=todayISO();S.activities=S.activities.filter(a=>a.date!==t);S.activities.push({date:t,type:b.dataset.act});save();render();toast('ثبت شد');}
   if(b.dataset.ex){const c=document.createElement('div');c.innerHTML=exDetail(b.dataset.ex);const card=c.firstElementChild;card.style.marginBottom='12px';m.prepend(card);m.scrollTop=0;}
   if(b.hasAttribute('data-close')){b.closest('.card').remove();}
-  if(b.id==='m-save'){const w=+$('#m-w').value,waist=+$('#m-waist').value,abd=+$('#m-abd').value,date=$('#m-date').value;if(!w||!abd){toast('وزن و دور شکم لازم است');return;}S.measures=S.measures.filter(x=>x.date!==date);S.measures.push({date,weight:w,waist:waist||null,abd});save();render();toast('ثبت شد');}
+  if(b.id==='m-save'){const w=+$('#m-w').value,waist=+$('#m-waist').value,abd=+$('#m-abd').value,date=$('#m-date').value;if(!w){toast('وزن لازم است؛ دور شکم هر دو هفته');return;}const prev=S.measures.find(x=>x.date===date)||{};S.measures=S.measures.filter(x=>x.date!==date);S.measures.push({date,weight:w,waist:waist||prev.waist||null,abd:abd||prev.abd||null});save();render();toast('ثبت شد');}
   if(b.dataset.delm){confirmBox('این اندازه حذف شود؟',()=>{S.measures=S.measures.filter(x=>x.date!==b.dataset.delm);save();render();});}
   if(b.dataset.dels){confirmBox('این جلسه حذف شود؟',()=>{S.sessions=S.sessions.filter(x=>String(x.id)!==b.dataset.dels);save();render();});}
   if(b.dataset.font){S.settings.font=b.dataset.font;save();applyFont();render();}
