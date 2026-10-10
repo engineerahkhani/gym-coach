@@ -164,6 +164,9 @@ ul.tips li{margin-bottom:3px}
 .cal .d.rest{opacity:.6;text-decoration:line-through}
 .cal .d.today{outline:2px solid var(--fg)}
 .cal .h{color:var(--muted);font-size:10px}
+.cal button.d{border:0;padding:0;font:inherit;position:relative;width:100%}
+.cal .d.fed::after{content:"";position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:2px;background:currentColor;opacity:.8}
+.wk button.wd{border:0;font:inherit;width:100%}
 .chart{width:100%;height:auto;display:block}
 .chart text{fill:var(--muted);font-size:9px;font-family:var(--font)}
 .chart .grid{stroke:var(--line)}
@@ -562,7 +565,7 @@ function chart(ms){if(ms.length<2)return `<p class="muted">بعد از دومی�
   return `<polyline class="${cls}" points="${vs.map((v,i)=>xs2[i].toFixed(1)+','+y(v).toFixed(1)).join(' ')}"/>${vs.map((v,i)=>`<circle class="${dcls}" cx="${xs2[i].toFixed(1)}" cy="${y(v).toFixed(1)}" r="3"/><text x="${xs2[i].toFixed(1)}" y="${(y(v)-6).toFixed(1)}" text-anchor="middle">${fa(v)}</text>`).join('')}`;};
  return `<svg class="chart" viewBox="0 0 ${Wd} ${H}">${[0,1,2,3].map(i=>`<line class="grid" x1="${px}" x2="${Wd-10}" y1="${py+i*(H-py-22)/3}" y2="${py+i*(H-py-22)/3}"/>`).join('')}${ser('weight','l1','dot1')}${ser('abd','l2','dot2')}${ms.map((m,i)=>`<text x="${xs[i].toFixed(1)}" y="${H-4}" text-anchor="middle">${jshort(m.date)}</text>`).join('')}</svg>`;}
 
-function viewHist(){const t=todayISO();const start=addDays(t,-((dow(t)+1)%7)-7*5);const cells=[];for(let i=0;i<42;i++){const d=addDays(start,i);const s=S.sessions.find(x=>x.date===d),a=S.activities.find(x=>x.date===d);cells.push(`<div class="d ${s?'gym':a?(a.type==='rest'?'rest':a.type==='ride'?'ride':'swim'):''} ${d===t?'today':''}" title="${d}">${fa(toJalali(d).jd)}</div>`);}
+function viewHist(){const t=todayISO();const start=addDays(t,-((dow(t)+1)%7)-7*5);const cells=[];for(let i=0;i<42;i++){const d=addDays(start,i);const s=S.sessions.find(x=>x.date===d),a=S.activities.find(x=>x.date===d);const fk=foodEntries(nutDay(d)).length;cells.push(`<button class="d ${s?'gym':a?(a.type==='rest'?'rest':a.type==='ride'?'ride':'swim'):''} ${d===t?'today':''} ${fk?'fed':''}" data-fday="${d}" title="${d}">${fa(toJalali(d).jd)}</button>`);}
  let streak=0;for(let w=0;w<52;w++){const ws=addDays(t,-((dow(t)+1)%7)-7*w);const days=[];for(let i=0;i<7;i++)days.push(addDays(ws,i));const n=S.sessions.filter(s=>days.includes(s.date)).length;if(n>=3)streak++;else if(w>0)break;}
  const best=Object.keys(EX).filter(id=>!PROG.bodyweight.has(id)&&id!=='bike').map(id=>{const vals=[];S.sessions.forEach(s=>s.ex.filter(e=>e.id===id).forEach(e=>e.sets.forEach(st=>{if(st.done&&st.w)vals.push({w:+st.w,r:+st.r,d:s.date});})));if(!vals.length)return '';const first=vals[0],top=vals.reduce((a,b)=>b.w>a.w?b:a,vals[0]);const rm=Math.max(...vals.map(v=>e1rm(v.w,v.r)));return `<div class="row" style="border-top:1px solid var(--line);padding:6px 0;font-size:14px"><span class="grow">${EX[id].name}<div class="muted" style="font-size:12px">۱RM تخمینی ${fa(rm)} کیلو</div></span><span class="muted">شروع ${fa(first.w)}</span><b>الان ${fa(top.w)} کیلو</b>${top.w>first.w?`<span class="pill good">+${fa(top.w-first.w)}</span>`:''}</div>`;}).join('');
  const wk=weekStats();const mgc={};MG.forEach(([g])=>mgc[g]=0);S.sessions.filter(x=>wk.days.includes(x.date)).forEach(x=>x.ex.forEach(e=>{const n=e.sets.filter(st=>st.done).length;(EX[e.id].mg||[]).forEach(g=>{if(mgc[g]!==undefined)mgc[g]+=n;});}));
@@ -572,7 +575,7 @@ function viewHist(){const t=todayISO();const start=addDays(t,-((dow(t)+1)%7)-7*5
  return `<div class="view">
  <div class="card"><div class="row"><h2 class="grow">${ic('cal')}شش هفتهٔ اخیر</h2><span class="pill ${streak?'good':''}">${fa(streak)} هفتهٔ کامل پشت سر هم</span></div>
  <div class="cal">${['ش','ی','د','س','چ','پ','ج'].map(x=>`<div class="h">${x}</div>`).join('')}${cells.join('')}</div>
- <div class="row" style="margin-top:8px;font-size:12px"><span class="pill" style="color:var(--accent)">باشگاه</span><span class="pill swim">شنا/تنیس</span><span class="pill" style="border-color:var(--swim)">رکاب</span><span class="pill">استراحت</span></div></div>
+ <p class="muted" style="margin:6px 0 0;font-size:12px">روی هر روز بزن تا تغذیهٔ همان روز را ببینی یا ویرایش کنی؛ نقطه یعنی خوراکی ثبت شده.</p><div class="row" style="margin-top:8px;font-size:12px"><span class="pill" style="color:var(--accent)">باشگاه</span><span class="pill swim">شنا/تنیس</span><span class="pill" style="border-color:var(--swim)">رکاب</span><span class="pill">استراحت</span></div></div>
  ${(()=>{const days=[];for(let i=0;i<28;i++){const d=addDays(t,-i);if(nutTouched(d))days.push(d);}if(!days.length)return '';
   const rows=NCHECKS.map(([k,label])=>{let y=0,nn=0;days.forEach(d=>{const v=nutDay(d)[k];if(v===true)y++;else if(v===false)nn++;});const tot=y+nn;return {label,y,nn,pct:tot?Math.round(y/tot*100):null};}).filter(r=>r.pct!==null).sort((a,b)=>a.pct-b.pct);
   const mig=days.filter(d=>nutDay(d).migraine);const avg=arr=>arr.length?(arr.reduce((a,d)=>a+nutScore(d),0)/arr.length).toFixed(1):null;const nm=days.filter(d=>!nutDay(d).migraine);
@@ -645,14 +648,15 @@ function nutDay(d){return S.nutrition[d]||{};}
 function nutScore(d){const n=nutDay(d);return NCHECKS.filter(([k])=>n[k]===true).length;}
 function nutMiss(d){const n=nutDay(d);return NCHECKS.filter(([k])=>n[k]===false).length;}
 function nutTouched(d){const n=nutDay(d);return NCHECKS.some(([k])=>n[k]===true||n[k]===false)||NFLAGS.some(([k])=>n[k])||(n.meals&&n.meals.length>0);}
-function viewFood(){const t=todayISO(),n=nutDay(t),sc=nutScore(t),ms=nutMiss(t);const wk=weekStats();const wd=wk.days.filter(d=>d<=t).map(d=>({d,s:nutScore(d)}));const good=wd.filter(x=>x.s>=NGOOD).length;
+function viewFood(){const t=fday(),today=todayISO(),n=nutDay(t),sc=nutScore(t),ms=nutMiss(t);const wk=weekStats();const wd=wk.days.filter(d=>d<=t).map(d=>({d,s:nutScore(d)}));const good=wd.filter(x=>x.s>=NGOOD).length;
  let streak=0;for(let i=0;i<365;i++){const d=addDays(t,-i);if(nutScore(d)>=NGOOD)streak++;else break;}
  const ents=foodEntries(n);const fav=foodFav();const list=foodCat==='fav'?fav:Object.keys(FOODS).filter(id=>FOODS[id].c===foodCat);
  const tally={};ents.forEach(e=>{if(e.id){const c=FOODS[e.id].c;tally[c]=(tally[c]||0)+e.q;}});
  const months=foodMonths();const mk=foodMonth||months[0];
  const mstat=(()=>{const j=mk.split('-').map(Number);let days=0,cnt=0;Object.keys(S.nutrition).forEach(d=>{const jj=toJalali(d);if(jj.jy!==j[0]||jj.jm!==j[1])return;const k=foodEntries(S.nutrition[d]).length;if(k){days++;cnt+=k;}});return {days,cnt};})();
  return `<div class="view">
- <div class="card"><div class="row"><h2 class="grow">${ic('food')}چی خوردم؟ ${jstr(t)}</h2><span class="pill ${ents.length?'good':''}">${fa(ents.length)} مورد</span></div>
+ <div class="card"><div class="row" style="flex-wrap:nowrap"><button class="btn small ghost" data-fday="${addDays(t,-1)}" style="padding:4px 10px">›</button><h2 class="grow" style="margin:0;text-align:center;font-size:15px">${t===today?'امروز، ':''}${jstr(t,t!==today)}</h2><button class="btn small ghost" data-fday="${addDays(t,1)}" style="padding:4px 10px">‹</button></div>
+ <div class="row" style="justify-content:center;margin:4px 0 6px">${t!==today?`<button class="btn small" data-fday="${today}">برگشت به امروز</button>`:''}<span class="pill ${ents.length?'good':''}">${fa(ents.length)} مورد</span>${t>today?'<span class="pill warn">روز آینده</span>':''}</div>
  <p class="muted" style="margin:0 0 6px;font-size:12px">هر لمس یک واحد اضافه می‌کند؛ دو تخم‌مرغ یعنی دو لمس. تعداد را بعداً با − و + درست کن.</p>
  <div class="chips">${[['fav','پرتکرار'],...Object.entries(CATN)].map(([k,nm])=>`<button class="${foodCat===k?'on':''}" data-fcat="${k}">${nm}</button>`).join('')}</div>
  <div class="fgrid">${list.map(id=>`<button data-food="${id}"><span>${FOODS[id].n}</span><small>${FOODS[id].s===0.5?'½ ':''}${FOODS[id].u}</small></button>`).join('')}</div>
@@ -666,7 +670,7 @@ function viewFood(){const t=todayISO(),n=nutDay(t),sc=nutScore(t),ms=nutMiss(t);
  <p class="muted" style="margin:6px 0 0;font-size:12px">یک لمس ✓ رعایت شد، دو لمس ✗ رعایت نشد، سه لمس خالی. ${fa(NGOOD)} از ${fa(NCHECKS.length)} یعنی روز خوب.</p>
  <div class="chk">${NCHECKS.map(([k,label])=>`<button class="${n[k]===true?'on':n[k]===false?'off':''}" data-nut="${k}"><span class="box">${n[k]===true?ic('check'):n[k]===false?'✕':''}</span><span class="grow">${label}</span></button>`).join('')}</div></details></div>
  <div class="card"><div class="row"><h2 class="grow">${ic('cal')}این هفته</h2><span class="pill ${good>=5?'good':''}">${fa(good)} روز خوب</span>${streak>1?`<span class="pill good">${fa(streak)} روز پشت سر هم</span>`:''}</div>
- <div class="wk">${wk.days.map(d=>{const s2=d<=t?nutScore(d):null;const k=d<=t?foodEntries(nutDay(d)).length:0;return `<div class="wd ${s2===null?'fut':s2>=NGOOD?'good':s2>0||k?'part':''} ${d===t?'today':''} ${nutDay(d).migraine?'mig':''}"><span>${['ش','ی','د','س','چ','پ','ج'][(dow(d)+1)%7]}</span><b>${s2===null?'·':fa(k)}</b></div>`;}).join('')}</div><p class="muted" style="margin:6px 0 0;font-size:12px">عدد هر روز: تعداد خوراکی‌های ثبت‌شده.</p></div>
+ <div class="wk">${wk.days.map(d=>{const s2=d<=today?nutScore(d):null;const k=foodEntries(nutDay(d)).length;return `<button class="wd ${s2===null?'fut':s2>=NGOOD?'good':s2>0||k?'part':''} ${d===t?'today':''} ${nutDay(d).migraine?'mig':''}" data-fday="${d}"><span>${['ش','ی','د','س','چ','پ','ج'][(dow(d)+1)%7]}</span><b>${s2===null?'·':fa(k)}</b></button>`;}).join('')}</div><p class="muted" style="margin:6px 0 0;font-size:12px">عدد هر روز: تعداد خوراکی‌ها. روی روز بزن تا همان روز را ثبت یا ویرایش کنی.</p></div>
  <div class="card"><h2>${ic('save')}خروجی ماهانه برای بررسی</h2><p class="muted" style="margin:0 0 8px">آخر هر ماه این فایل را بفرست تا با هم مرور کنیم. فایل CSV است و در اکسل و Numbers باز می‌شود؛ کالری و پروتئین تقریبی فقط در فایل می‌آید، نه این‌جا.</p>
  <div class="row"><select id="fx-month" class="grow">${months.map(m=>{const [y,mo]=m.split('-').map(Number);return `<option value="${m}" ${m===mk?'selected':''}>${JM[mo-1]} ${fa(y)}</option>`;}).join('')}</select><span class="pill">${fa(mstat.days)} روز · ${fa(mstat.cnt)} مورد</span></div>
  <div class="row" style="margin-top:8px"><button class="btn primary grow" id="fx-share" ${mstat.cnt?'':'disabled'}>${ic('save')}ذخیره / اشتراک فایل</button><button class="btn grow" id="fx-copy" ${mstat.cnt?'':'disabled'}>کپی متن</button></div></div>
@@ -687,12 +691,13 @@ const FOODS={
  tea:{n:'چای',u:'لیوان',c:'drink',k:2,p:0},coffee:{n:'قهوه',u:'فنجان',c:'drink',k:5,p:0},soda:{n:'نوشابه / آبمیوه',u:'لیوان',c:'drink',k:110,p:0},water:{n:'آب',u:'لیوان',c:'drink',k:0,p:0},
 };
 const FOOD_DEFAULT=['egg','bread','rice','chicken','stew','yogurt','salad','dates','tea','water','honey','fruit'];
-let foodCat='fav',foodMonth=null;
+let foodCat='fav',foodMonth=null,foodDate=null;
+const fday=()=>foodDate||todayISO();
 const fq=q=>{const i=Math.floor(q),h=q-i>=0.5;return (i?fa(i):'')+(h?'½':'')||'۰';};
 function foodEntries(n){return (n.meals||[]).map((e,i)=>Object.assign({i},e)).sort((a,b)=>a.t<b.t?-1:a.t>b.t?1:a.i-b.i);}
 function foodFav(){const t=todayISO(),cnt={};for(let i=0;i<30;i++){((S.nutrition[addDays(t,-i)]||{}).meals||[]).forEach(e=>{if(e.id&&FOODS[e.id])cnt[e.id]=(cnt[e.id]||0)+1;});}
  const top=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]).slice(0,12);FOOD_DEFAULT.forEach(id=>{if(top.length<12&&!top.includes(id))top.push(id);});return top;}
-function foodAdd(id){const f=FOODS[id];if(!f)return;const t=todayISO();const n=S.nutrition[t]=S.nutrition[t]||{};const m=n.meals=n.meals||[];const now=new Date(),hm=now.toTimeString().slice(0,5),mins=now.getHours()*60+now.getMinutes();const st=f.s||1;
+function foodAdd(id){const f=FOODS[id];if(!f)return;const t=fday();const n=S.nutrition[t]=S.nutrition[t]||{};const m=n.meals=n.meals||[];const now=new Date(),isT=t===todayISO(),hm=isT?now.toTimeString().slice(0,5):'12:00',mins=isT?now.getHours()*60+now.getMinutes():720;const st=f.s||1;
  const last=m[m.length-1];if(last&&last.id===id){const [h,mi]=last.t.split(':').map(Number);if(mins-(h*60+mi)<=10){last.q=+(last.q+st).toFixed(1);save();render();toast(`${f.n} ${fq(last.q)} ${f.u}`);return;}}
  m.push({t:hm,id,q:st});save();render();toast(`${f.n} ${fq(st)} ${f.u}`);}
 function foodMonths(){const set=new Set();Object.keys(S.nutrition).forEach(d=>{if(foodEntries(S.nutrition[d]).length){const j=toJalali(d);set.add(j.jy+'-'+j.jm);}});const j=toJalali(todayISO());set.add(j.jy+'-'+j.jm);return [...set].sort((a,b)=>{const [ay,am]=a.split('-').map(Number),[by,bm]=b.split('-').map(Number);return by-ay||bm-am;});}
@@ -784,14 +789,15 @@ function confirmBox(msg,yes){const o=$('#overlay');o.innerHTML=`<div class="time
 /* ---------- bindings for tabs ---------- */
 function tabClick(ev){const m=$('#main');{const b=ev.target.closest('button');if(!b)return;
   if(b.dataset.goto){tab=b.dataset.goto;render();return;}
-  if(b.dataset.nut){const t=todayISO();S.nutrition[t]=S.nutrition[t]||{};const cur=S.nutrition[t][b.dataset.nut];S.nutrition[t][b.dataset.nut]=cur===true?false:cur===false?null:true;save();render();return;}
-  if(b.id==='fl-add'){const inp=$('#fl-txt'),v=(inp.value||'').trim();if(!v){inp.focus();return;}const t=todayISO();S.nutrition[t]=S.nutrition[t]||{};(S.nutrition[t].meals=S.nutrition[t].meals||[]).push({t:new Date().toTimeString().slice(0,5),txt:v});save();render();toast('ثبت شد');return;}
-  if(b.dataset.fdel!==undefined){const t=todayISO();S.nutrition[t].meals.splice(+b.dataset.fdel,1);save();render();return;}
+  if(b.dataset.nut){const t=fday();S.nutrition[t]=S.nutrition[t]||{};const cur=S.nutrition[t][b.dataset.nut];S.nutrition[t][b.dataset.nut]=cur===true?false:cur===false?null:true;save();render();return;}
+  if(b.id==='fl-add'){const inp=$('#fl-txt'),v=(inp.value||'').trim();if(!v){inp.focus();return;}const t=fday();S.nutrition[t]=S.nutrition[t]||{};(S.nutrition[t].meals=S.nutrition[t].meals||[]).push({t:t===todayISO()?new Date().toTimeString().slice(0,5):'12:00',txt:v});save();render();toast('ثبت شد');return;}
+  if(b.dataset.fdel!==undefined){const t=fday();S.nutrition[t].meals.splice(+b.dataset.fdel,1);save();render();return;}
   if(b.dataset.food){foodAdd(b.dataset.food);return;}
+  if(b.dataset.fday){foodDate=b.dataset.fday===todayISO()?null:b.dataset.fday;tab='food';lastView=null;render();return;}
   if(b.dataset.fcat){foodCat=b.dataset.fcat;render();return;}
-  if(b.dataset.fq!==undefined){const t=todayISO();const e=S.nutrition[t].meals[+b.dataset.fq];const st=(FOODS[e.id]||{}).s||1;e.q=+(e.q+st*(+b.dataset.d)).toFixed(1);if(e.q<=0){S.nutrition[t].meals.splice(+b.dataset.fq,1);}save();render();return;}
+  if(b.dataset.fq!==undefined){const t=fday();const e=S.nutrition[t].meals[+b.dataset.fq];const st=(FOODS[e.id]||{}).s||1;e.q=+(e.q+st*(+b.dataset.d)).toFixed(1);if(e.q<=0){S.nutrition[t].meals.splice(+b.dataset.fq,1);}save();render();return;}
   if(b.id==='fx-share'||b.id==='fx-copy'){foodExport($('#fx-month').value,b.id==='fx-copy');return;}
-  if(b.dataset.flag){const t=todayISO();S.nutrition[t]=S.nutrition[t]||{};S.nutrition[t][b.dataset.flag]=!S.nutrition[t][b.dataset.flag];save();render();return;}
+  if(b.dataset.flag){const t=fday();S.nutrition[t]=S.nutrition[t]||{};S.nutrition[t][b.dataset.flag]=!S.nutrition[t][b.dataset.flag];save();render();return;}
   if(b.dataset.start){startWorkout(b.dataset.start,b.dataset.short==='1');}
   if(b.dataset.act){const t=todayISO();S.activities=S.activities.filter(a=>a.date!==t);S.activities.push({date:t,type:b.dataset.act});save();render();toast('ثبت شد');}
   if(b.dataset.ex){const c=document.createElement('div');c.innerHTML=exDetail(b.dataset.ex);const card=c.firstElementChild;card.style.marginBottom='12px';m.prepend(card);m.scrollTop=0;}
