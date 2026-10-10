@@ -37,6 +37,13 @@ Single-file offline PWA (`index.html`, ~430 KB, fonts embedded) for one person's
 - Warm-up sets auto-suggested at 50%×8 and 75%×4 of working weight.
 - Plate calculator for barbell exercises (bar 20, lying triceps bar 10). Plates: 20/15/10/5/2.5/1.25.
 
+## Food log (v13)
+Tap-to-log with household units, no calorie counting in the UI. `FOODS` catalog (~45 Persian home foods: name, unit, category, step 0.5 for rice/tuna/baguette, hidden rough kcal/protein per unit used only in export). Tapping an item adds one unit at the current time; same item tapped again within 10 min merges into the previous entry. Category chips (default "پرتکرار" = top 12 used in last 30 days, padded from `FOOD_DEFAULT`). Free-text entries still possible. Stored in `nutrition[date].meals[{t,id,q}|{t,txt}]`; legacy `log[]` is migrated into `meals` in `load()`. Checklist kept but collapsed under a `<details>`.
+Monthly export (food tab, bottom card): Jalali month picker → CSV (UTF-8 BOM, one row per entry: jalali/gregorian date, weekday, time, meal slot from time, food, qty, unit, category, ~kcal, ~protein, gym session/activity that day, weight if measured, flags, checklist ✓/✗). `foodExport()` uses Web Share with a File on iOS, download fallback, or clipboard copy. Send the file to Claude at month end for review.
+
+## Design (v13): Liquid Glass
+Translucent layered surfaces over a soft colored backdrop (3 radial blobs on `body`). `.card`, `nav.tabs`, `.toast`, header capsules use `backdrop-filter` (`--blur`) + inset top highlight (`--hl`) + a gradient specular rim (`.card::before` with mask-composite). Header and tab bar are `position:fixed` and float over content (`main` has top/bottom padding for them); the header has a progressive blur via `mask-image`. Controls are capsules; inputs/steppers/segments sit in `--well` with `--lined` borders. `prefers-reduced-transparency` falls back to `--solid`. Tokens: `--surface`/`--surface2` are now rgba, so inline styles that reference them stay translucent automatically.
+
 ## Nutrition (simple rules, no counting)
 13-item daily checklist, tri-state (✓ / ✗ / blank), "good day" = 9+. Day flags: migraine, severe hunger, ate out. Free-text food log per day for later review. History tab shows 28-day adherence % per item (lowest first) and migraine vs adherence averages.
 
@@ -54,7 +61,7 @@ Targets: 0.4–0.6 kg/week; weigh weekly (same day, fasted), waist/abdomen every
 - Service worker: cache-first with background refresh.
 
 ## Version log
-v1 stick figures · v2 human figures, Vazirmatn, icons, ratings, bike commute · v3 plate calc, warm-ups, PR/volume, RIR, muscle sets, deload · v4 font switcher · v5 theme · v6 stepper set rows · v7 nutrition tab · v8 tri-state checklist, flags, adherence history · v9 food log · v10 keep scroll · v11 no double-tap zoom, hold timer, finishers, warm-up in session, Today reorder · v12 no input zoom, measurement reminder, weight-only entries.
+v1 stick figures · v2 human figures, Vazirmatn, icons, ratings, bike commute · v3 plate calc, warm-ups, PR/volume, RIR, muscle sets, deload · v4 font switcher · v5 theme · v6 stepper set rows · v7 nutrition tab · v8 tri-state checklist, flags, adherence history · v9 food log · v10 keep scroll · v11 no double-tap zoom, hold timer, finishers, warm-up in session, Today reorder · v12 no input zoom, measurement reminder, weight-only entries · v13 tap-to-log food with household units + monthly CSV export, Liquid Glass restyle.
 
 ## Ideas not done (deliberately)
 Calendar reminders (.ics), progress photos, Apple Watch, social features, 12-week block periodization beyond deload weeks, Peyda font (couldn't fetch).
