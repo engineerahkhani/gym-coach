@@ -74,9 +74,9 @@ header.top{position:fixed;top:0;left:0;right:0;z-index:5;padding:calc(8px + env(
 header.top h1,header.top .date{pointer-events:auto;border-radius:999px;padding:6px 14px}
 header.top h1{font-size:17px;margin:0;font-weight:700;background:var(--surface);border:1px solid var(--line);box-shadow:inset 0 1px 0 var(--hl),0 8px 24px -12px var(--shadow)}
 header.top .date{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums;background:var(--surface);border:1px solid var(--line);box-shadow:inset 0 1px 0 var(--hl),0 8px 24px -12px var(--shadow)}
-main{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:calc(64px + env(safe-area-inset-top,0px)) 16px calc(104px + env(safe-area-inset-bottom,0px))}
+main{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:calc(64px + env(safe-area-inset-top,0px)) 16px calc(84px + env(safe-area-inset-bottom,0px))}
 /* floating tab bar */
-nav.tabs{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:5;display:flex;padding:5px;border-radius:999px;gap:2px}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:5;display:flex;padding:6px 8px calc(4px + env(safe-area-inset-bottom,0px));border-radius:0;border-width:1px 0 0;gap:2px;box-shadow:inset 0 1px 0 var(--hl),0 -8px 30px -16px var(--shadow)}
 nav.tabs button{flex:1;background:none;border:0;color:var(--muted);font-size:10px;padding:6px 0 4px;border-radius:999px;display:flex;flex-direction:column;align-items:center;gap:1px;min-height:50px;justify-content:center}
 nav.tabs button svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 nav.tabs button.on{color:var(--fg);background:var(--surface2);box-shadow:inset 0 1px 0 var(--hl),0 6px 14px -6px var(--shadow)}
@@ -177,7 +177,7 @@ details summary{cursor:pointer;font-weight:700;list-style:none;display:flex;alig
 details summary::-webkit-details-marker{display:none}
 details summary::after{content:"";margin-right:auto;width:8px;height:8px;border-left:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg);transition:transform .2s;flex:none}
 details[open] summary::after{transform:rotate(135deg)}
-.toast{position:fixed;bottom:calc(84px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);width:max-content;max-width:calc(100% - 32px);color:var(--fg);padding:10px 18px;border-radius:999px;text-align:center;z-index:60;font-size:14px;font-weight:600;animation:toastIn .25s ease}
+.toast{position:fixed;bottom:calc(76px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);width:max-content;max-width:calc(100% - 32px);color:var(--fg);padding:10px 18px;border-radius:999px;text-align:center;z-index:60;font-size:14px;font-weight:600;animation:toastIn .25s ease}
 @keyframes toastIn{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}
 .seg{display:flex;background:var(--well);border:1px solid var(--lined);border-radius:999px;padding:3px;gap:3px}
 .seg button{flex:1;border:0;background:none;border-radius:999px;padding:8px;color:var(--muted)}
@@ -213,6 +213,8 @@ details[open] summary::after{transform:rotate(135deg)}
 .fgrid button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:var(--surface2);border:1px solid var(--line);border-radius:16px;padding:8px 6px;min-height:56px;font-size:13px;line-height:1.3;color:var(--fg);font-weight:700;box-shadow:inset 0 1px 0 var(--hl)}
 .fgrid button small{font-size:11px;color:var(--muted);font-weight:400}
 .fgrid button:active{transform:scale(.95);border-color:color-mix(in srgb,var(--accent) 60%,transparent);background:color-mix(in srgb,var(--accent) 14%,transparent)}
+.fcell{position:relative}.fcell>button[data-food]{width:100%;height:100%}
+.fgrid .cdel{position:absolute;top:-6px;left:-6px;width:22px;height:22px;min-height:0;display:flex;align-items:center;justify-content:center;border-radius:11px;border:1px solid var(--line);background:var(--solid);color:var(--bad);font-size:12px;line-height:1;padding:0;box-shadow:0 2px 6px var(--shadow)}
 .frow{flex-wrap:nowrap}
 .stp.sm{height:34px;flex:none;border-radius:999px}.stp.sm button{width:30px;font-size:18px}.stp.sm span{min-width:30px;text-align:center;font-weight:700;font-variant-numeric:tabular-nums;font-size:14px}
 .progress{height:6px;background:var(--well);border-radius:3px;overflow:hidden}
@@ -249,7 +251,7 @@ const jshort=iso=>{const j=toJalali(iso);return fa(j.jm)+'/'+fa(j.jd);};
 
 /* ---------- storage ---------- */
 const KEY='pocketcoach_v1';
-const DEFAULT={profile:{height:null,age:null},settings:{sound:true,wake:true,restScale:1,font:'vazirmatn',theme:'dark'},measures:[],sessions:[],activities:[],nutrition:{},live:null};
+const DEFAULT={profile:{height:null,age:null},settings:{sound:true,wake:true,restScale:1,font:'vazirmatn',theme:'dark'},measures:[],sessions:[],activities:[],nutrition:{},foods:{},live:null};
 let S;
 function load(){try{const raw=localStorage.getItem(KEY);S=raw?Object.assign({},DEFAULT,JSON.parse(raw)):JSON.parse(JSON.stringify(DEFAULT));}catch(e){S=JSON.parse(JSON.stringify(DEFAULT));}S.settings=Object.assign({},DEFAULT.settings,S.settings);S.nutrition=S.nutrition||{};Object.values(S.nutrition).forEach(n=>{if(n.log){n.meals=(n.meals||[]).concat(n.log.map(x=>({t:x.t,txt:x.txt})));delete n.log;}});applyFont();}
 function applyFont(){const r=document.documentElement;r.dataset.font=S.settings.font||'vazirmatn';const t=S.settings.theme||'dark';if(t==='system')delete r.dataset.theme;else r.dataset.theme=t;const m=document.querySelector('meta[name=theme-color]');if(m)m.content=t==='light'?'#eceef4':'#0b0d12';}
@@ -583,7 +585,7 @@ function viewHist(){const t=todayISO();const start=addDays(t,-((dow(t)+1)%7)-7*5
   ${mig.length?`<p class="muted" style="margin:8px 0 0">${ic('warn')}سردرد در ${fa(mig.length)} روز. میانگین رعایت در روزهای سردرد ${fa(avg(mig))}، در بقیهٔ روزها ${fa(avg(nm)||'—')}. ${mig.length>=3&&avg(nm)&&+avg(mig)<+avg(nm)?'الگو همان است که انتظار داشتیم: روزهای کم‌رعایت، سردرد بیشتر.':''}</p>`:''}
   <p class="muted" style="margin:6px 0 0;font-size:12px">پایین‌ترین‌ها اول. درصد از روزهایی حساب می‌شود که ✓ یا ✗ زده‌ای.</p></div>
   ${(()=>{const L=[];for(let i=0;i<14;i++){const d=addDays(t,-i);const n=nutDay(d);const E=foodEntries(n);if(E.length)L.push({d,n,E});}if(!L.length)return '';
-   return `<div class="card"><h2>${ic('list')}خوراکی‌های ثبت‌شده، دو هفتهٔ اخیر</h2>${L.map(({d,n,E})=>`<div style="border-top:1px solid var(--line);padding:6px 0;font-size:14px"><div class="row"><b class="grow">${jstr(d)}</b>${n.migraine?'<span class="pill bad">سردرد</span>':''}${n.cheat?'<span class="pill warn">بیرون</span>':''}<span class="pill">${fa(E.length)} مورد</span></div><div class="muted" style="font-size:13px;line-height:1.7">${E.map(e=>e.id?`${FOODS[e.id].n} ${fq(e.q)}`:e.txt).join('، ')}</div></div>`).join('')}<p class="muted" style="margin:8px 0 0;font-size:12px">خروجی کامل ماه در تب تغذیه.</p></div>`;})()}`;})()}
+   return `<div class="card"><h2>${ic('list')}خوراکی‌های ثبت‌شده، دو هفتهٔ اخیر</h2>${L.map(({d,n,E})=>`<div style="border-top:1px solid var(--line);padding:6px 0;font-size:14px"><div class="row"><b class="grow">${jstr(d)}</b>${n.migraine?'<span class="pill bad">سردرد</span>':''}${n.cheat?'<span class="pill warn">بیرون</span>':''}<span class="pill">${fa(E.length)} مورد</span></div><div class="muted" style="font-size:13px;line-height:1.7">${E.map(e=>e.id?`${FD(e.id).n} ${fq(e.q)}`:e.txt).join('، ')}</div></div>`).join('')}<p class="muted" style="margin:8px 0 0;font-size:12px">خروجی کامل ماه در تب تغذیه.</p></div>`;})()}`;})()}
  <div class="card"><h2>${ic('user')}ست‌های هر عضله، این هفته</h2>${mgHtml}<p class="muted" style="margin:8px 0 0">عدد دوم حداقل ست هفتگی برای رشد است. رکاب‌زدن تا باشگاه جداگانه پا را کار می‌کند و این‌جا شمرده نمی‌شود.</p></div>
  <div class="card"><h2>${ic('flame')}پیشرفت وزنه‌ها</h2>${best||'<p class="muted">بعد از اولین جلسه پر می‌شود.</p>'}</div>
  <div class="card"><h2>${ic('info')}رضایت از حرکت‌ها</h2>${rates||'<p class="muted">بعد از امتیاز دادن در تمرین پر می‌شود. حرکت‌هایی که مدام امتیاز پایین می‌گیرند را عوض می‌کنیم.</p>'}</div>
@@ -650,8 +652,8 @@ function nutMiss(d){const n=nutDay(d);return NCHECKS.filter(([k])=>n[k]===false)
 function nutTouched(d){const n=nutDay(d);return NCHECKS.some(([k])=>n[k]===true||n[k]===false)||NFLAGS.some(([k])=>n[k])||(n.meals&&n.meals.length>0);}
 function viewFood(){const t=fday(),today=todayISO(),n=nutDay(t),sc=nutScore(t),ms=nutMiss(t);const wk=weekStats();const wd=wk.days.filter(d=>d<=t).map(d=>({d,s:nutScore(d)}));const good=wd.filter(x=>x.s>=NGOOD).length;
  let streak=0;for(let i=0;i<365;i++){const d=addDays(t,-i);if(nutScore(d)>=NGOOD)streak++;else break;}
- const ents=foodEntries(n);const fav=foodFav();const list=foodCat==='fav'?fav:Object.keys(FOODS).filter(id=>FOODS[id].c===foodCat);
- const tally={};ents.forEach(e=>{if(e.id){const c=FOODS[e.id].c;tally[c]=(tally[c]||0)+e.q;}});
+ const ents=foodEntries(n);const fav=foodFav();const list=foodCat==='fav'?fav:Object.keys(FOODS).concat(Object.keys(S.foods||{})).filter(id=>FD(id).c===foodCat);
+ const tally={};ents.forEach(e=>{if(e.id){const c=FD(e.id).c;tally[c]=(tally[c]||0)+e.q;}});
  const months=foodMonths();const mk=foodMonth||months[0];
  const mstat=(()=>{const j=mk.split('-').map(Number);let days=0,cnt=0;Object.keys(S.nutrition).forEach(d=>{const jj=toJalali(d);if(jj.jy!==j[0]||jj.jm!==j[1])return;const k=foodEntries(S.nutrition[d]).length;if(k){days++;cnt+=k;}});return {days,cnt};})();
  return `<div class="view">
@@ -659,9 +661,10 @@ function viewFood(){const t=fday(),today=todayISO(),n=nutDay(t),sc=nutScore(t),m
  <div class="row" style="justify-content:center;margin:4px 0 6px">${t!==today?`<button class="btn small" data-fday="${today}">برگشت به امروز</button>`:''}<span class="pill ${ents.length?'good':''}">${fa(ents.length)} مورد</span>${t>today?'<span class="pill warn">روز آینده</span>':''}</div>
  <p class="muted" style="margin:0 0 6px;font-size:12px">هر لمس یک واحد اضافه می‌کند؛ دو تخم‌مرغ یعنی دو لمس. تعداد را بعداً با − و + درست کن.</p>
  <div class="chips">${[['fav','پرتکرار'],...Object.entries(CATN)].map(([k,nm])=>`<button class="${foodCat===k?'on':''}" data-fcat="${k}">${nm}</button>`).join('')}</div>
- <div class="fgrid">${list.map(id=>`<button data-food="${id}"><span>${FOODS[id].n}</span><small>${FOODS[id].s===0.5?'½ ':''}${FOODS[id].u}</small></button>`).join('')}</div>
- <div class="row" style="flex-wrap:nowrap;margin-top:8px"><input type="text" id="fl-txt" class="grow" placeholder="چیز دیگری خوردی؟ مثلاً: آش رشته با کشک" autocomplete="off" enterkeyhint="done"><button class="btn primary small" id="fl-add" style="min-height:44px">ثبت</button></div>
- ${ents.length?`<div class="flog" style="margin-top:12px">${ents.map(e=>{const f=e.id?FOODS[e.id]:null;return `<div class="row frow"><span class="muted" style="font-variant-numeric:tabular-nums;font-size:12px;width:38px;flex:none">${fa(e.t)}</span><span class="grow">${f?f.n:e.txt}${f?` <span class="muted">${f.u}</span>`:''}</span>${f?`<div class="stp sm"><button data-fq="${e.i}" data-d="-1">−</button><span>${fq(e.q)}</span><button data-fq="${e.i}" data-d="1">+</button></div>`:''}<button class="btn small ghost" data-fdel="${e.i}" style="min-height:34px;padding:4px 8px">✕</button></div>`;}).join('')}</div>
+ <div class="fgrid">${list.map(id=>`<div class="fcell"><button data-food="${id}"><span>${FD(id).n}</span><small>${FD(id).s===0.5?'½ ':''}${FD(id).u}</small></button>${foodCat==='custom'?`<button class="cdel" data-cdel="${id}" aria-label="حذف">✕</button>`:''}</div>`).join('')}</div>
+ ${foodCat==='custom'?`<p class="muted" style="margin:6px 0 0;font-size:12px">${list.length?'هر چیزی که پایین تایپ کنی این‌جا می‌ماند. ✕ آیتم را از فهرست حذف می‌کند، ثبت‌های قبلی می‌مانند.':'هنوز خوراکی سفارشی نداری؛ پایین تایپ کن.'}</p>`:''}
+ <div class="row" style="flex-wrap:nowrap;margin-top:8px"><input type="text" id="fl-txt" class="grow" placeholder="خوراکی جدید، با واحد: آش رشته، کاسه" autocomplete="off" enterkeyhint="done"><button class="btn primary small" id="fl-add" style="min-height:44px">ثبت</button></div>
+ ${ents.length?`<div class="flog" style="margin-top:12px">${ents.map(e=>{const f=e.id?FD(e.id):null;return `<div class="row frow"><span class="muted" style="font-variant-numeric:tabular-nums;font-size:12px;width:38px;flex:none">${fa(e.t)}</span><span class="grow">${f?f.n:e.txt}${f?` <span class="muted">${f.u}</span>`:''}</span>${f?`<div class="stp sm"><button data-fq="${e.i}" data-d="-1">−</button><span>${fq(e.q)}</span><button data-fq="${e.i}" data-d="1">+</button></div>`:''}<button class="btn small ghost" data-fdel="${e.i}" style="min-height:34px;padding:4px 8px">✕</button></div>`;}).join('')}</div>
  <p class="muted" style="margin:8px 0 0;font-size:12px">${Object.keys(tally).map(c=>`${CATN[c]} ${fq(tally[c])}`).join(' · ')}</p>`:`<p class="muted" style="margin:10px 0 0">هنوز چیزی برای امروز ثبت نشده.</p>`}
  <div class="muted" style="margin:12px 0 4px">علامت‌های امروز</div>
  <div class="row">${NFLAGS.map(([k,label,icn])=>`<button class="btn small ${n[k]?'':'ghost'}" data-flag="${k}" style="${n[k]?'border-color:var(--warn);color:var(--warn)':''}">${ic(icn)}${label}</button>`).join('')}</div></div>
@@ -678,7 +681,7 @@ function viewFood(){const t=fday(),today=todayISO(),n=nutDay(t),sc=nutScore(t),m
  </div>`;}
 
 /* ---------- food log ---------- */
-const CATN={prot:'پروتئین',carb:'نان و برنج',mix:'غذای کامل',veg:'سبزی',fruit:'میوه',dairy:'لبنیات',fat:'چربی و آجیل',sweet:'شیرینی',drink:'نوشیدنی'};
+const CATN={custom:'سفارشی',prot:'پروتئین',carb:'نان و برنج',mix:'غذای کامل',veg:'سبزی',fruit:'میوه',dairy:'لبنیات',fat:'چربی و آجیل',sweet:'شیرینی',drink:'نوشیدنی'};
 const FOODS={
  egg:{n:'تخم‌مرغ',u:'عدد',c:'prot',k:75,p:6},chicken:{n:'مرغ',u:'کف دست',c:'prot',k:165,p:30},meat:{n:'گوشت قرمز',u:'کف دست',c:'prot',k:220,p:26},fish:{n:'ماهی',u:'کف دست',c:'prot',k:150,p:25},tuna:{n:'تن ماهی',u:'قوطی',c:'prot',s:0.5,k:150,p:30},kebab:{n:'کباب / جوجه',u:'سیخ',c:'prot',k:250,p:30},legume:{n:'حبوبات (عدس، لوبیا)',u:'کفگیر',c:'prot',k:150,p:9},kuku:{n:'کوکو / کتلت',u:'عدد',c:'prot',k:150,p:7},
  bread:{n:'نان سنگک / بربری',u:'کف دست',c:'carb',k:90,p:3},lavash:{n:'نان لواش',u:'عدد',c:'carb',k:80,p:3},baguette:{n:'نان فرانسوی',u:'عدد',c:'carb',s:0.5,k:330,p:11},rice:{n:'برنج',u:'کفگیر',c:'carb',s:0.5,k:200,p:4},tahdig:{n:'ته‌دیگ',u:'تکه',c:'carb',k:150,p:2},pasta:{n:'ماکارونی',u:'کفگیر',c:'carb',k:220,p:7},potato:{n:'سیب‌زمینی',u:'عدد',c:'carb',k:130,p:3},
@@ -690,14 +693,15 @@ const FOODS={
  honey:{n:'عسل / شیره',u:'قاشق',c:'sweet',k:60,p:0},sugar:{n:'قند / شکر',u:'حبه',c:'sweet',k:20,p:0},cake:{n:'شیرینی / کیک',u:'تکه',c:'sweet',k:250,p:3},chocolate:{n:'شکلات',u:'تکه',c:'sweet',k:80,p:1},icecream:{n:'بستنی',u:'عدد',c:'sweet',k:200,p:4},chips:{n:'چیپس / پفک',u:'مشت',c:'sweet',k:150,p:2},
  tea:{n:'چای',u:'لیوان',c:'drink',k:2,p:0},coffee:{n:'قهوه',u:'فنجان',c:'drink',k:5,p:0},soda:{n:'نوشابه / آبمیوه',u:'لیوان',c:'drink',k:110,p:0},water:{n:'آب',u:'لیوان',c:'drink',k:0,p:0},
 };
+const FD=id=>FOODS[id]||(S.foods||{})[id]||(id&&id.startsWith('c_')?{n:'(حذف‌شده)',u:'',c:'custom'}:undefined);
 const FOOD_DEFAULT=['egg','bread','rice','chicken','stew','yogurt','salad','dates','tea','water','honey','fruit'];
 let foodCat='fav',foodMonth=null,foodDate=null;
 const fday=()=>foodDate||todayISO();
 const fq=q=>{const i=Math.floor(q),h=q-i>=0.5;return (i?fa(i):'')+(h?'½':'')||'۰';};
 function foodEntries(n){return (n.meals||[]).map((e,i)=>Object.assign({i},e)).sort((a,b)=>a.t<b.t?-1:a.t>b.t?1:a.i-b.i);}
-function foodFav(){const t=todayISO(),cnt={};for(let i=0;i<30;i++){((S.nutrition[addDays(t,-i)]||{}).meals||[]).forEach(e=>{if(e.id&&FOODS[e.id])cnt[e.id]=(cnt[e.id]||0)+1;});}
+function foodFav(){const t=todayISO(),cnt={};for(let i=0;i<30;i++){((S.nutrition[addDays(t,-i)]||{}).meals||[]).forEach(e=>{if(e.id&&FD(e.id))cnt[e.id]=(cnt[e.id]||0)+1;});}
  const top=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]).slice(0,12);FOOD_DEFAULT.forEach(id=>{if(top.length<12&&!top.includes(id))top.push(id);});return top;}
-function foodAdd(id){const f=FOODS[id];if(!f)return;const t=fday();const n=S.nutrition[t]=S.nutrition[t]||{};const m=n.meals=n.meals||[];const now=new Date(),isT=t===todayISO(),hm=isT?now.toTimeString().slice(0,5):'12:00',mins=isT?now.getHours()*60+now.getMinutes():720;const st=f.s||1;
+function foodAdd(id){const f=FD(id);if(!f)return;const t=fday();const n=S.nutrition[t]=S.nutrition[t]||{};const m=n.meals=n.meals||[];const now=new Date(),isT=t===todayISO(),hm=isT?now.toTimeString().slice(0,5):'12:00',mins=isT?now.getHours()*60+now.getMinutes():720;const st=f.s||1;
  const last=m[m.length-1];if(last&&last.id===id){const [h,mi]=last.t.split(':').map(Number);if(mins-(h*60+mi)<=10){last.q=+(last.q+st).toFixed(1);save();render();toast(`${f.n} ${fq(last.q)} ${f.u}`);return;}}
  m.push({t:hm,id,q:st});save();render();toast(`${f.n} ${fq(st)} ${f.u}`);}
 function foodMonths(){const set=new Set();Object.keys(S.nutrition).forEach(d=>{if(foodEntries(S.nutrition[d]).length){const j=toJalali(d);set.add(j.jy+'-'+j.jm);}});const j=toJalali(todayISO());set.add(j.jy+'-'+j.jm);return [...set].sort((a,b)=>{const [ay,am]=a.split('-').map(Number),[by,bm]=b.split('-').map(Number);return by-ay||bm-am;});}
@@ -706,7 +710,7 @@ function foodCSV(mk){const [jy,jm]=mk.split('-').map(Number);const ACTN={swim:'�
  const rows=[['تاریخ','تاریخ میلادی','روز هفته','ساعت','وعده','خوراکی','مقدار','واحد','دسته','کالری تقریبی','پروتئین تقریبی (گرم)','باشگاه / فعالیت','وزن','سردرد','گرسنگی شدید','غذای بیرون','چک‌لیست ✓','چک‌لیست ✗']];
  Object.keys(S.nutrition).sort().forEach(d=>{const j=toJalali(d);if(j.jy!==jy||j.jm!==jm)return;const n=S.nutrition[d];const ents=foodEntries(n);if(!ents.length)return;
   const act=S.sessions.filter(s=>s.date===d).map(s=>'جلسهٔ '+s.w+(s.short?' کوتاه':'')).concat(S.activities.filter(a=>a.date===d).map(a=>ACTN[a.type]||a.type)).join('، ');const m=S.measures.find(x=>x.date===d);
-  ents.forEach(e=>{const f=e.id?FOODS[e.id]:null;rows.push([jstr(d),d,JD[dow(d)],e.t,mealOf(e.t),f?f.n:e.txt,f?e.q:'',f?f.u:'',f?CATN[f.c]:'آزاد',f?Math.round(f.k*e.q):'',f?Math.round(f.p*e.q):'',act,m&&m.weight?m.weight:'',n.migraine?1:'',n.hungry?1:'',n.cheat?1:'',nutScore(d),nutMiss(d)]);});});
+  ents.forEach(e=>{const f=e.id?FD(e.id):null;rows.push([jstr(d),d,JD[dow(d)],e.t,mealOf(e.t),f?f.n:e.txt,f?e.q:'',f?f.u:'',f?CATN[f.c]:'آزاد',f&&f.k!=null?Math.round(f.k*e.q):'',f&&f.p!=null?Math.round(f.p*e.q):'',act,m&&m.weight?m.weight:'',n.migraine?1:'',n.hungry?1:'',n.cheat?1:'',nutScore(d),nutMiss(d)]);});});
  return '﻿'+rows.map(r=>r.map(v=>'"'+String(v===null||v===undefined?'':v).replace(/"/g,'""')+'"').join(',')).join('\r\n');}
 function foodExport(mk,copy){const csv=foodCSV(mk),name='food-'+mk.replace('-','-'+'0').replace(/-0(\d\d)$/,'-$1')+'.csv';
  if(copy){navigator.clipboard.writeText(csv).then(()=>toast('کپی شد؛ در یادداشت یا چت بچسبان')).catch(()=>toast('کپی نشد'));return;}
@@ -790,12 +794,13 @@ function confirmBox(msg,yes){const o=$('#overlay');o.innerHTML=`<div class="time
 function tabClick(ev){const m=$('#main');{const b=ev.target.closest('button');if(!b)return;
   if(b.dataset.goto){tab=b.dataset.goto;render();return;}
   if(b.dataset.nut){const t=fday();S.nutrition[t]=S.nutrition[t]||{};const cur=S.nutrition[t][b.dataset.nut];S.nutrition[t][b.dataset.nut]=cur===true?false:cur===false?null:true;save();render();return;}
-  if(b.id==='fl-add'){const inp=$('#fl-txt'),v=(inp.value||'').trim();if(!v){inp.focus();return;}const t=fday();S.nutrition[t]=S.nutrition[t]||{};(S.nutrition[t].meals=S.nutrition[t].meals||[]).push({t:t===todayISO()?new Date().toTimeString().slice(0,5):'12:00',txt:v});save();render();toast('ثبت شد');return;}
+  if(b.id==='fl-add'){const inp=$('#fl-txt'),v=(inp.value||'').trim();if(!v){inp.focus();return;}let [nm,un]=v.split(/[،,]/).map(x=>x.trim());if(!nm){inp.focus();return;}un=un||'عدد';S.foods=S.foods||{};let id=Object.keys(S.foods).find(k=>S.foods[k].n===nm);if(!id){id='c_'+Date.now().toString(36);S.foods[id]={n:nm,u:un,c:'custom'};}inp.value='';foodAdd(id);return;}
   if(b.dataset.fdel!==undefined){const t=fday();S.nutrition[t].meals.splice(+b.dataset.fdel,1);save();render();return;}
   if(b.dataset.food){foodAdd(b.dataset.food);return;}
+  if(b.dataset.cdel){delete S.foods[b.dataset.cdel];save();render();toast('از فهرست حذف شد');return;}
   if(b.dataset.fday){foodDate=b.dataset.fday===todayISO()?null:b.dataset.fday;tab='food';lastView=null;render();return;}
   if(b.dataset.fcat){foodCat=b.dataset.fcat;render();return;}
-  if(b.dataset.fq!==undefined){const t=fday();const e=S.nutrition[t].meals[+b.dataset.fq];const st=(FOODS[e.id]||{}).s||1;e.q=+(e.q+st*(+b.dataset.d)).toFixed(1);if(e.q<=0){S.nutrition[t].meals.splice(+b.dataset.fq,1);}save();render();return;}
+  if(b.dataset.fq!==undefined){const t=fday();const e=S.nutrition[t].meals[+b.dataset.fq];const st=(FD(e.id)||{}).s||1;e.q=+(e.q+st*(+b.dataset.d)).toFixed(1);if(e.q<=0){S.nutrition[t].meals.splice(+b.dataset.fq,1);}save();render();return;}
   if(b.id==='fx-share'||b.id==='fx-copy'){foodExport($('#fx-month').value,b.id==='fx-copy');return;}
   if(b.dataset.flag){const t=fday();S.nutrition[t]=S.nutrition[t]||{};S.nutrition[t][b.dataset.flag]=!S.nutrition[t][b.dataset.flag];save();render();return;}
   if(b.dataset.start){startWorkout(b.dataset.start,b.dataset.short==='1');}
