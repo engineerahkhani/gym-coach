@@ -243,7 +243,7 @@ const fa = n => (n===null||n===undefined||n==='')?'—':String(n).replace(/\d/g,
 const todayISO = ()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
 const addDays=(iso,n)=>{const d=new Date(iso+'T12:00:00');d.setDate(d.getDate()+n);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
 const dow = iso => new Date(iso+'T12:00:00').getDay(); // 0 Sun ... 6 Sat
-const wlab=k=>/^\d+$/.test(String(k))?fa(k):k;
+const wlab=k=>k==='H'?'خانه':/^\d+$/.test(String(k))?fa(k):k;
 const mmss=sec=>sec?fa(Math.floor(sec/60))+':'+fa(String(sec%60).padStart(2,'0')):'—';
 function parseMMSS(v){v=String(v||'').replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٫.،]/g,':').trim();if(!v)return null;const p=v.split(':').map(Number);if(p.some(isNaN))return null;return p.length>1?p[0]*60+(p[1]||0):Math.round(p[0]*60);}
 /* Jalali conversion (jalaali algorithm) */
@@ -258,7 +258,7 @@ const jshort=iso=>{const j=toJalali(iso);return fa(j.jm)+'/'+fa(j.jd);};
 
 /* ---------- storage ---------- */
 const KEY='pocketcoach_v1';
-const DEFAULT={profile:{height:null,age:null},settings:{sound:true,wake:true,restScale:1,font:'vazirmatn',theme:'dark',mode:'gym'},measures:[],sessions:[],activities:[],nutrition:{},foods:{},tests:[],live:null};
+const DEFAULT={profile:{height:null,age:null},settings:{sound:true,wake:true,restScale:1,font:'vazirmatn',theme:'dark',mode:'gym',home:true},measures:[],sessions:[],activities:[],nutrition:{},foods:{},tests:[],live:null};
 let S;
 function load(){try{const raw=localStorage.getItem(KEY);S=raw?Object.assign({},DEFAULT,JSON.parse(raw)):JSON.parse(JSON.stringify(DEFAULT));}catch(e){S=JSON.parse(JSON.stringify(DEFAULT));}S.settings=Object.assign({},DEFAULT.settings,S.settings);S.nutrition=S.nutrition||{};Object.values(S.nutrition).forEach(n=>{if(n.log){n.meals=(n.meals||[]).concat(n.log.map(x=>({t:x.t,txt:x.txt})));delete n.log;}});S.tests=S.tests||[];applyMode();applyFont();}
 function applyFont(){const r=document.documentElement;r.dataset.font=S.settings.font||'vazirmatn';const t=S.settings.theme||'dark';if(t==='system')delete r.dataset.theme;else r.dataset.theme=t;const m=document.querySelector('meta[name=theme-color]');if(m)m.content=t==='light'?'#eceef4':'#0b0d12';}
@@ -357,7 +357,7 @@ const SHARED=['plank','sideplank','deadbug','deadhang','kneeraise','legraise','c
 const PROG={bodyweight:new Set([...SHARED,...CALI])};
 const mode=()=>(S&&S.settings&&S.settings.mode)||'gym';
 const altOf=id=>(mode()==='cali'&&EX[id].altc)||EX[id].alt;
-const libIds=()=>mode()==='cali'?[...CALI,...SHARED]:Object.keys(EX).filter(id=>!EX[id].c);
+const libIds=()=>mode()==='cali'?[...CALI,...SHARED]:Object.keys(EX).filter(id=>!EX[id].c||HOME_IDS.has(id));
 const MG=[['پا',6],['باسن',6],['پشت',6],['سینه',6],['شانه',3],['بازو',4],['میان‌تنه',6]];
 const PLATES=[20,15,10,5,2.5,1.25];
 function plates(total,bar){if(!total||total<=bar)return null;let side=(total-bar)/2,out=[];for(const p of PLATES){while(side>=p-0.001){out.push(p);side-=p;}}return {out,rest:side};}
@@ -372,8 +372,12 @@ const WG={
  A:{name:'جلسهٔ A · قدرت پایین‌تنه و سینه',list:[['squat',3],['bench',3],['row',3],['plank',3],['farmer',2]]},
  B:{name:'جلسهٔ B · پشت بدن و سرشانه',list:[['rdl',3],['ohp',3],['latpull',3],['lunge',2],['deadbug',3]]},
  C:{name:'جلسهٔ C · سینه، پشت، باسن و میان‌تنه',list:[['hipthrust',3],['incline',3],['cablerow',3],['pullladder',3],['sideplank',3],['curl',2],['skull',2]]},
+ H:{name:'جلسهٔ خانه · کالیستنیکس مداری',home:true,list:[['pushup',3],['airsquat',3],['bwlunge',2],['burpee',3],['mountainclimber',3],['hollow',3]]},
 };
-const FING={A:[['deadhang',2],['kneeraise',2]],B:[['legraise',2],['crunch',2]],C:[['deadhang',2]]};
+const FING={A:[['deadhang',2],['kneeraise',2]],B:[['legraise',2],['crunch',2]],C:[['deadhang',2]],H:[['superman',2],['situp',2]]};
+const HOME_IDS=new Set(['pushup','airsquat','bwlunge','burpee','mountainclimber','hollow','superman','situp']);
+/* per-session meta: the home session is bodyweight, shorter, warms up like the calisthenics program */
+const sessMeta=w=>W[w]&&W[w].home?{icon:'flame',full:'~۲۵ دقیقه',warm:WARMC,label:'خانه'}:{icon:MODES[mode()].icon,full:MODES[mode()].full,warm:WARM,label:MODES[mode()].label};
 const WARMG=['۵ دقیقه دوچرخه یا تردمیل آرام','۱۰ اسکوات بدون وزنه','۱۰ چرخش شانه هر جهت + ۱۰ هیپ هینج','یک ست سبک (۵۰٪ وزنه) از حرکت اول'];
 const WC={
  '1':{name:'جلسهٔ ۱ · بالاتنه و تست‌محور',list:[['pushup',4],['pullup',4],['dips',3],['airsquat',3],['plank',3]]},
@@ -382,7 +386,7 @@ const WC={
 };
 const FINC={'1':[['kneeraise',2],['deadhang',2]],'2':[['situp',2],['sideplank',2]],'3':[['legraise',2],['crunch',2]]};
 const WARMC=['۶۰ ثانیه جامپینگ‌جک یا طناب','۱۰ چرخش بازو هر جهت + ۱۰ چرخش لگن','۱۰ اسکوات آرام + ۵ لانگ هر پا','۳۰ ثانیه زانوبلند درجا + ۵ شنای آرام'];
-const MODES={gym:{W:WG,FIN:FING,WARM:WARMG,label:'باشگاه',icon:'dumbbell',full:'~۶۰ دقیقه',shortNote:'نسخهٔ کوتاه برای روزهای بی‌حوصله: فقط ۳ حرکت اول، ۲ ست. رفتن به باشگاه از بی‌نقص تمرین کردن مهم‌تر است.',week:'هفته از شنبه شروع می‌شود. هدف: ۳ جلسه باشگاه + ۱ جلسه شنا یا تنیس. رکاب‌زدن سربالایی برگشت هم کاردیو حساب می‌شود؛ اگر شنا نرسیدی، همین کافی است.'},
+const MODES={gym:{W:WG,FIN:FING,WARM:WARMG,label:'باشگاه',icon:'dumbbell',full:'~۶۰ دقیقه',shortNote:'نسخهٔ کوتاه برای روزهای بی‌حوصله: فقط ۳ حرکت اول، ۲ ست. رفتن به باشگاه از بی‌نقص تمرین کردن مهم‌تر است.',week:'هفته از شنبه شروع می‌شود. هدف: ۳ جلسه باشگاه + ۱ جلسهٔ خانه (کالیستنیکس، ۲۵ دقیقه) یا شنا/تنیس. رکاب‌زدن سربالایی برگشت هم کاردیو حساب می‌شود.'},
  cali:{W:WC,FIN:FINC,WARM:WARMC,label:'کالیستنیکس',icon:'flame',full:'~۴۵ دقیقه',shortNote:'نسخهٔ کوتاه: ۳ حرکت اول، ۲ ست، هرجا که هستی. حتی ۱۵ دقیقه هم زنجیره را حفظ می‌کند.',week:'هفته از شنبه شروع می‌شود. هدف: ۳ جلسهٔ کالیستنیکس (با یک روز فاصله) + ۱ جلسه شنا، تنیس یا دویدن. بدون تجهیزات؛ فقط یک میلهٔ بارفیکس و یک نیمکت یا صندلی.'}};
 let W,FIN,WARM;function applyMode(){const c=MODES[mode()]||MODES.gym;W=c.W;FIN=c.FIN;WARM=c.WARM;}
 const RULESC=['سه جلسه در هفته با یک روز فاصله؛ جلسه‌ها پشت سر هم نباشند.','استراحت بین ست‌ها ۴۵ تا ۶۰ ثانیه؛ هدف تعداد بالا با فرم تمیز است، نه سرعت.','هر حرکت یک بازهٔ تکرار دارد؛ وقتی همهٔ ست‌ها به سقف رسید، دفعهٔ بعد اپ تکرار بیشتری پیشنهاد می‌دهد. اگر دو هفته پشت هم سقف را زدی، نسخهٔ سخت‌تر را بزن (شنای الماسی، پا روی پله، پرش، تک‌پا).','«در توان» را صادقانه ثبت کن: ۰ یعنی تا مرز، ۳+ یعنی خیلی راحت.','هفتهٔ ۴، ۸ و ۱۲ سبک است: تکرارها ۲۰٪ کمتر.','بارفیکس نشد؟ منفی بزن (۳ تا ۵ ثانیه پایین آمدن) یا آویزان بمان؛ هر هفته یک تکرار اضافه کن.','تست آمادگی هر ۴ هفته، همیشه با همان شرایط (ساعت روز، زمین، کفش).','دویدن یا طناب را کنار شنا به‌عنوان کاردیو حساب کن.','دور شکم را هر دو هفته ثبت کن، نه هر روز. غذا: چک‌لیست روزانه در تب تغذیه.'];
@@ -586,7 +590,7 @@ function suggest(exId,targetSets){const ex=EX[exId],last=lastSets(exId);if(!last
  if(allTop)return {w:w+ex.inc,msg:easy&&!reps.every(r=>r>=hi)?`دفعهٔ قبل ۳+ تکرار در توان مانده بود؛ ${fa(ex.inc)} کیلو اضافه کن.`:`همهٔ ست‌ها به ${fa(hi)} تکرار رسید؛ ${fa(ex.inc)} کیلو اضافه کن.`,kind:'up'};
  if(anyLow)return {w:Math.max(0,w-ex.inc),msg:`دفعهٔ قبل تکرارها کم شد؛ ${fa(ex.inc)} کیلو کم کن و فرم را درست کن.`,kind:'down'};
  return {w,msg:`همان ${fa(w)} کیلو؛ سعی کن یک تکرار بیشتر از دفعهٔ قبل بزنی.`,kind:'same'};}
-function nextWorkout(){const keys=Object.keys(W);const ss=S.sessions.filter(s=>!s.short&&(s.mode||'gym')===mode());if(!ss.length)return keys[0];const i=keys.indexOf(ss[ss.length-1].w);return keys[(i+1)%keys.length];}
+function nextWorkout(){const keys=Object.keys(W).filter(k=>!(W[k].home&&S.settings.home===false));const ss=S.sessions.filter(s=>!s.short&&(s.mode||'gym')===mode());if(!ss.length)return keys[0];const i=keys.indexOf(ss[ss.length-1].w);return keys[(i+1)%keys.length];}
 
 /* ---------- icons ---------- */
 const ICON={
@@ -642,11 +646,11 @@ function viewToday(){const w=nextWorkout(),ws=weekStats();const msAll=S.measures
  <p class="muted" style="margin:8px 0 0">${MODES[mode()].week}</p></div>
  ${doneToday?`<div class="card"><h2>${ic('check')}تمرین امروز ثبت شد</h2><p class="muted">استراحت کن، آب بخور، پروتئین یادت نرود. فردا روز استراحت است.</p></div>`:''}
  ${actToday?`<div class="card"><h2>${ic(actToday.type==='rest'?'bed':actToday.type)}${({rest:'امروز استراحت ثبت شد',swim:'شنا ثبت شد ✓',tennis:'تنیس ثبت شد ✓',ride:'رکاب‌زدن تا باشگاه ثبت شد ✓'})[actToday.type]}</h2></div>`:''}
- <div class="card"><div class="row"><span class="muted grow">جلسهٔ بعدی</span><button class="pill" data-goto="set" style="min-height:0">${ic(MODES[mode()].icon)}${MODES[mode()].label}</button></div><h2>${ic(MODES[mode()].icon)}${W[w].name}</h2>
+ <div class="card"><div class="row"><span class="muted grow">جلسهٔ بعدی</span><button class="pill" data-goto="set" style="min-height:0">${ic(MODES[mode()].icon)}${MODES[mode()].label}</button></div><h2>${ic(sessMeta(w).icon)}${W[w].name}</h2>
  <ol style="margin:4px 0 6px;padding-right:20px;font-size:14px"><li class="muted">گرم‌کردن ۵ دقیقه</li>${W[w].list.map(([id,n])=>`<li>${EX[id].name} <span class="muted">${fa(n)}×${fa(EX[id].range[0])}–${fa(EX[id].range[1])} ${EX[id].unit||''}${EX[id].per?' '+EX[id].per:''}</span></li>`).join('')}${(FIN[w]||[]).map(([id,n])=>`<li>${EX[id].name} <span class="muted">${fa(n)}×${fa(EX[id].range[0])}–${fa(EX[id].range[1])} ${EX[id].unit||''} · پایانی</span></li>`).join('')}</ol>
- <div class="row"><button class="btn primary grow" data-start="${w}" data-short="0">${ic('play')}شروع جلسهٔ کامل · ${MODES[mode()].full}</button></div>
+ <div class="row"><button class="btn primary grow" data-start="${w}" data-short="0">${ic('play')}شروع جلسهٔ کامل · ${sessMeta(w).full}</button></div>
  <div class="row" style="margin-top:8px"><button class="btn grow" data-start="${w}" data-short="1">${ic('timer')}نسخهٔ کوتاه · ۲۰ دقیقه</button></div>
- <p class="muted" style="margin:8px 0 0">${MODES[mode()].shortNote}</p>
+ <p class="muted" style="margin:8px 0 0">${W[w].home?'بدون وسیله، هر جا که هستی: ۴۵ ثانیه استراحت، تعداد بالا با فرم تمیز. جای روزی که شنا یا تنیس نمی‌روی.':MODES[mode()].shortNote}</p>
  <details style="margin-top:8px"><summary>ترتیب جلسه‌ها را عوض کن</summary><div class="row" style="margin-top:8px">${Object.keys(W).map(k=>`<button class="btn small" data-start="${k}" data-short="0">جلسهٔ ${wlab(k)}</button>`).join('')}</div></details></div>
  ${mode()==='cali'?ptCard():''}
  <div class="card"><h2>${ic('flame')}فعالیت‌های دیگر</h2><div class="row"><button class="btn grow" data-act="swim">${ic('swim')}شنا</button><button class="btn grow" data-act="tennis">${ic('tennis')}تنیس</button></div><div class="row" style="margin-top:8px"><button class="btn grow" data-act="ride">${ic('bike')}رکاب تا باشگاه</button><button class="btn grow ghost" data-act="rest">${ic('bed')}استراحت</button></div></div>
@@ -738,7 +742,7 @@ function viewSet(){return `<div class="view">
  <div class="card"><h2>${ic('timer')}تمرین</h2>
  <label class="row" style="justify-content:space-between;min-height:44px"><span>صدای پایان استراحت</span><input type="checkbox" id="s-sound" ${S.settings.sound?'checked':''}></label>
  <label class="row" style="justify-content:space-between;min-height:44px"><span>صفحه حین تمرین روشن بماند</span><input type="checkbox" id="s-wake" ${S.settings.wake?'checked':''}></label>
- <div class="f" style="margin-bottom:10px">برنامهٔ تمرینی<div class="seg" id="s-mode">${[['gym','باشگاه (وزنه)'],['cali','کالیستنیکس (نظامی)']].map(([k,n])=>`<button class="${mode()===k?'on':''}" data-mode="${k}">${n}</button>`).join('')}</div><p class="muted" style="margin:4px 0 0;font-size:12px">${mode()==='cali'?'سه جلسهٔ بدون وزنه با تعداد بالا و استراحت کوتاه، به سبک آمادگی جسمانی ارتش. فقط بارفیکس و یک نیمکت لازم است.':'سه جلسهٔ A/B/C با هالتر و دمبل در باشگاه.'} هر وقت خواستی عوض کن؛ تاریخچه، تغذیه و اندازه‌ها مشترک‌اند و هر برنامه چرخهٔ جلسه‌های خودش را دارد.</p></div>
+ <div class="f" style="margin-bottom:10px">برنامهٔ تمرینی<div class="seg" id="s-mode">${[['gym','باشگاه (وزنه)'],['cali','کالیستنیکس (نظامی)']].map(([k,n])=>`<button class="${mode()===k?'on':''}" data-mode="${k}">${n}</button>`).join('')}</div><p class="muted" style="margin:4px 0 0;font-size:12px">${mode()==='cali'?'سه جلسهٔ بدون وزنه با تعداد بالا و استراحت کوتاه، به سبک آمادگی جسمانی ارتش. فقط بارفیکس و یک نیمکت لازم است.':'سه جلسهٔ A/B/C با هالتر و دمبل در باشگاه.'} هر وقت خواستی عوض کن؛ تاریخچه، تغذیه و اندازه‌ها مشترک‌اند و هر برنامه چرخهٔ جلسه‌های خودش را دارد.</p>${mode()==='gym'?`<label class="row" style="justify-content:space-between;min-height:44px;margin-top:6px"><span>جلسهٔ چهارم در خانه (کالیستنیکس)<br><span class="muted" style="font-size:12px">چرخه A → B → C → خانه؛ ۲۵ دقیقه بدون وسیله</span></span><input type="checkbox" id="s-home" ${S.settings.home!==false?'checked':''}></label>`:''}</div>
  <div class="f" style="margin-bottom:10px">تم<div class="seg" id="s-theme">${[['dark','تیره'],['light','روشن'],['system','مثل سیستم']].map(([k,n])=>`<button class="${(S.settings.theme||'dark')===k?'on':''}" data-theme-opt="${k}">${n}</button>`).join('')}</div></div>
  <div class="f" style="margin-bottom:10px">فونت اپ<div class="seg" id="s-font">${[['vazirmatn','Vazirmatn'],['sahel','Sahel'],['shabnam','Shabnam'],['system','سیستم']].map(([k,n])=>`<button class="${(S.settings.font||'vazirmatn')===k?'on':''}" data-font="${k}">${n}</button>`).join('')}</div><p class="muted" style="margin:4px 0 0;font-size:12px">نمونه: اسکوات هالتر ۳ ست × ۸–۱۰ تکرار، ۴۲٫۵ کیلو، استراحت ۱۲۰ ثانیه</p></div>
  <label class="f">زمان استراحت<select id="s-rest"><option value="1" ${S.settings.restScale==1?'selected':''}>پیش‌فرض برنامه</option><option value="0.75" ${S.settings.restScale==0.75?'selected':''}>کوتاه‌تر (۲۵٪ کمتر)</option><option value="1.25" ${S.settings.restScale==1.25?'selected':''}>بلندتر (۲۵٪ بیشتر)</option></select></label></div>
@@ -872,7 +876,7 @@ function viewLive(){const lv=S.live,e=lv.ex[lv.i],ex=EX[e.id],done=lv.ex.reduce(
  return `<div class="view">
  <div class="row"><span class="muted grow">جلسهٔ ${wlab(lv.w)}${lv.short?' کوتاه':''} · ${fa(min)} دقیقه · حرکت ${fa(lv.i+1)} از ${fa(lv.ex.length)}${vol?` · ${fa(Math.round(vol))} کیلو`:''}</span><button class="btn small ghost danger" id="l-abort">انصراف</button></div>
  <div class="progress"><i style="width:${total?done/total*100:0}%"></i></div>
- ${lv.i===0?`<div class="card"><div class="row"><h3 class="grow">${ic('flame')}گرم‌کردن، ۵ دقیقه</h3><span class="muted">${fa((lv.wu||[]).filter(Boolean).length)}/۴</span></div><div class="chk" style="margin-top:6px">${WARM.map((x,i)=>`<button class="${lv.wu&&lv.wu[i]?'on':''}" data-wu="${i}" style="min-height:40px;padding:6px 10px;font-size:13px"><span class="box" style="width:20px;height:20px">${lv.wu&&lv.wu[i]?ic('check'):''}</span><span class="grow">${x}</span></button>`).join('')}</div></div>`:''}
+ ${lv.i===0?`<div class="card"><div class="row"><h3 class="grow">${ic('flame')}گرم‌کردن، ۵ دقیقه</h3><span class="muted">${fa((lv.wu||[]).filter(Boolean).length)}/۴</span></div><div class="chk" style="margin-top:6px">${sessMeta(lv.w).warm.map((x,i)=>`<button class="${lv.wu&&lv.wu[i]?'on':''}" data-wu="${i}" style="min-height:40px;padding:6px 10px;font-size:13px"><span class="box" style="width:20px;height:20px">${lv.wu&&lv.wu[i]?ic('check'):''}</span><span class="grow">${x}</span></button>`).join('')}</div></div>`:''}
  <div class="card">${e.fin?`<div class="muted" style="font-size:12px">${ic('flame')}پایان جلسه، اختیاری ولی چون دوست داری</div>`:''}<h2>${ex.name}</h2>${animBox(e.id)}
  ${ex.unit&&/ثانیه/.test(ex.unit)?`<div class="row" style="margin-top:8px"><button class="btn grow" id="l-hold" data-sec="${(e.sets.find(x=>!x.done)||{}).r||ex.range[1]}">${ic('timer')}تایمر ${fa((e.sets.find(x=>!x.done)||{}).r||ex.range[1])} ثانیه</button></div>`:''}
  <p class="muted" style="margin:8px 0 0">${fa(e.n)} ست × ${fa(ex.range[0])}–${fa(ex.range[1])} ${ex.unit||'تکرار'}${ex.per?' '+ex.per:''} · استراحت ${fa(rest)} ثانیه</p>
@@ -961,7 +965,7 @@ function tabClick(ev){const m=$('#main');{const b=ev.target.closest('button');if
   if(b.id==='b-import'){try{const d=JSON.parse($('#b-text').value);if(!d.sessions||!d.measures)throw 0;S=Object.assign({},DEFAULT,d);S.tests=S.tests||[];applyMode();save();render();toast('بازگردانی شد');}catch(e){toast('متن پشتیبان معتبر نیست');}}
   if(b.id==='s-reset'){confirmBox('همهٔ جلسه‌ها و اندازه‌ها پاک شود؟',()=>{S=JSON.parse(JSON.stringify(DEFAULT));applyMode();save();render();});}
  }}
-function tabChange(ev){{const t=ev.target;if(t.id==='fx-month'){foodMonth=t.value;render();return;}if(t.id==='p-h'){S.profile.height=+t.value||null;save();render();}if(t.id==='p-age'){S.profile.age=+t.value||null;save();}if(t.id==='s-sound'){S.settings.sound=t.checked;save();}if(t.id==='s-wake'){S.settings.wake=t.checked;save();}if(t.id==='s-rest'){S.settings.restScale=+t.value;save();}}}
+function tabChange(ev){{const t=ev.target;if(t.id==='fx-month'){foodMonth=t.value;render();return;}if(t.id==='p-h'){S.profile.height=+t.value||null;save();render();}if(t.id==='p-age'){S.profile.age=+t.value||null;save();}if(t.id==='s-sound'){S.settings.sound=t.checked;save();}if(t.id==='s-wake'){S.settings.wake=t.checked;save();}if(t.id==='s-home'){S.settings.home=t.checked;save();render();}if(t.id==='s-rest'){S.settings.restScale=+t.value;save();}}}
 $('#main').addEventListener('click',ev=>S.live?liveClick(ev):tabClick(ev));
 $('#main').addEventListener('input',ev=>{if(S.live)liveInput(ev);});
 $('#main').addEventListener('change',ev=>{if(!S.live)tabChange(ev);else liveInput(ev);});
