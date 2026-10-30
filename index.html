@@ -117,7 +117,9 @@ label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--mu
 .exitem{display:flex;gap:12px;align-items:center;background:var(--surface2);border:1px solid var(--line);border-radius:18px;padding:10px;width:100%;text-align:right;box-shadow:inset 0 1px 0 var(--hl)}
 .exitem:active{transform:scale(.985)}
 .exitem .thumb{width:60px;height:60px;flex:none;background:linear-gradient(180deg,var(--figbg),var(--figbg2));border-radius:14px;overflow:hidden}
-.exitem .thumb svg{width:100%;height:100%}
+.exitem .thumb svg,.exitem .thumb img{width:100%;height:100%;display:block}.exitem .thumb img{object-fit:cover}
+.anim.real{background:#0c0d10;aspect-ratio:auto;display:flex;flex-direction:column}.anim .photo{position:relative;aspect-ratio:1.5;width:100%;overflow:hidden}.anim.real .figcap{position:static;margin:0;border-radius:0;border:0;padding:9px 12px 10px;background:#f4f5f8;color:#1b1f26;min-height:20px}.anim.real .figcap:empty{opacity:1}.anim .photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity .45s ease}.anim .photo .ph1{opacity:0}.anim .photo.b .ph1{opacity:1}
+
 .anim{position:relative;background:radial-gradient(120% 90% at 50% 0%,var(--figbg) 0%,var(--figbg2) 100%);border:1px solid var(--line);border-radius:18px;width:100%;aspect-ratio:1.12;max-width:100%;display:block;overflow:hidden;box-shadow:inset 0 1px 0 rgba(255,255,255,.9)}
 .anim svg{width:100%;height:100%;display:block}
 .figcap{position:absolute;left:10px;right:10px;bottom:10px;text-align:center;font-size:12.5px;font-weight:600;color:#1b1f26;background:rgba(255,255,255,.82);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid rgba(20,30,50,.08);border-radius:999px;padding:6px 12px;pointer-events:none;min-height:18px;transition:opacity .25s}
@@ -488,7 +490,11 @@ const CAPS={
 function figSVG(id){return `<svg viewBox="0 0 200 184" data-ex="${id}" aria-label="${EX[id].name}">
  <ellipse class="shadow" cx="100" cy="${FLOOR+1}" rx="40" ry="4" fill="var(--figshadow)"/><line class="floor" x1="0" y1="${FLOOR}" x2="200" y2="${FLOOR}"/>
  <g class="eq"></g><g class="body"></g><g class="propf"></g></svg>`;}
-function animBox(id){return `<div class="anim">${figSVG(id)}<div class="figph"><i></i><i></i></div><div class="figcap"></div></div>`;}
+/* real-person demo photos (public domain, yuhonas/free-exercise-db), two phases per exercise: img/<id>_0.jpg, img/<id>_1.jpg */
+const PHOTO=new Set(["airsquat", "bench", "bike", "bwlunge", "cablerow", "chinneg", "chinup", "crunch", "curl", "deadbug", "diamondpushup", "dips", "farmer", "glutebridge", "goblet", "hipthrust", "incline", "jumpsquat", "latpull", "legraise", "lunge", "mountainclimber", "ohp", "plank", "pullladder", "pullup", "pushup", "rdl", "row", "run", "sideplank", "situp", "skull", "squat", "superman"]);
+function photoPair(id){return `<img class="ph0" src="img/${id}_0.jpg" alt="" loading="lazy" decoding="async"><img class="ph1" src="img/${id}_1.jpg" alt="" loading="lazy" decoding="async">`;}
+function figThumb(id){return PHOTO.has(id)?`<img src="img/${id}_0.jpg" alt="" loading="lazy" decoding="async">`:figSVG(id);}
+function animBox(id){const inner=PHOTO.has(id)?`<div class="photo" data-ex="${id}" aria-label="${EX[id].name}">${photoPair(id)}</div>`:figSVG(id);return `<div class="anim${PHOTO.has(id)?' real':''}">${inner}<div class="figph"><i></i><i></i></div><div class="figcap"></div></div>`;}
 const P=(x,y)=>x.toFixed(1)+','+y.toFixed(1);
 const INK='var(--ink)',OW=3;
 const seg=(a,b,w,c)=>`<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="${c}" stroke-width="${w}" stroke-linecap="round"/>`;
@@ -548,7 +554,9 @@ function fitView(svg){const id=svg.dataset.ex,[a,b]=POSES[id];let x0=1e9,y0=1e9,
  const cx=(x0+x1)/2,vx=cx-w/2,vy=y0-pad;svg.setAttribute('viewBox',`${vx.toFixed(1)} ${vy.toFixed(1)} ${w.toFixed(1)} ${h.toFixed(1)}`);
  const fl=svg.querySelector('.floor');fl.setAttribute('x1',(vx-5).toFixed(1));fl.setAttribute('x2',(vx+w+5).toFixed(1));svg.dataset.fit='1';}
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-function animateAll(){const svgs=document.querySelectorAll('svg[data-ex]');if(!svgs.length)return;const t=performance.now()/1000;
+function animateAll(){const t=performance.now()/1000;
+ document.querySelectorAll('.photo[data-ex]').forEach(ph=>{const id=ph.dataset.ex,cyc=CYC.has(id);const per=cyc?1.6:3.2;const raw=(t%per)/per;const b=reduced?false:raw>=.5;ph.classList.toggle('b',b);const box=ph.parentElement;const cap=box.querySelector('.figcap');const txt=CAPS[id]?CAPS[id][b?1:0]:'';if(cap&&cap.textContent!==txt)cap.textContent=txt;box.querySelectorAll('.figph i').forEach((el,i)=>el.classList.toggle('on',i===(b?1:0)));});
+ const svgs=document.querySelectorAll('svg[data-ex]');if(!svgs.length)return;
  svgs.forEach(s=>{const id=s.dataset.ex,[a,b]=POSES[id],cyc=CYC.has(id);if(!s.dataset.fit)fitView(s);const per=cyc?1.2:3.2;const raw=(t%per)/per;let k,ph;
   if(cyc){k=raw;ph=Math.floor(t/3)%2;}else{const tri=raw<.5?raw*2:2-raw*2;k=Math.min(1,Math.max(0,(tri-.12)/.76));k=k*k*(3-2*k);ph=raw<.5?0:1;}
   if(reduced){k=0.5;ph=0;}
@@ -666,7 +674,7 @@ function ptCard(){const ts=S.tests.slice().sort((a,b)=>a.date<b.date?-1:1),last=
  <button class="btn primary" style="width:100%;margin-top:10px" id="pt-save">ثبت تست</button></details></div>`;}
 
 
-function viewLib(){return `<div class="view"><p class="muted" style="margin:0">حرکت‌های برنامهٔ <b>${MODES[mode()].label}</b>. روی هر حرکت بزن تا انیمیشن، نکات فرم و اشتباه‌های رایج را ببینی. تغییر برنامه از تنظیمات.</p><div class="exlist">${libIds().map(id=>`<button class="exitem" data-ex="${id}"><div class="thumb">${figSVG(id)}</div><div class="grow"><b>${EX[id].name}</b><div class="muted">${EX[id].m} · ${EX[id].eq}</div></div></button>`).join('')}</div></div>`;}
+function viewLib(){return `<div class="view"><p class="muted" style="margin:0">حرکت‌های برنامهٔ <b>${MODES[mode()].label}</b>. روی هر حرکت بزن تا انیمیشن، نکات فرم و اشتباه‌های رایج را ببینی. تغییر برنامه از تنظیمات.</p><div class="exlist">${libIds().map(id=>`<button class="exitem" data-ex="${id}"><div class="thumb">${figThumb(id)}</div><div class="grow"><b>${EX[id].name}</b><div class="muted">${EX[id].m} · ${EX[id].eq}</div></div></button>`).join('')}</div></div>`;}
 function exDetail(id){const ex=EX[id],last=lastSets(id);return `<div class="card"><div class="row"><h2 class="grow">${ex.name}</h2><button class="btn small ghost" data-close>بستن</button></div>
  ${animBox(id)}
  <p class="muted" style="margin:8px 0 0">${ex.m} · ${ex.eq} · ${fa(ex.range[0])}–${fa(ex.range[1])} ${ex.unit||'تکرار'}${ex.per?' '+ex.per:''} · استراحت ${fa(ex.rest)} ثانیه</p>
