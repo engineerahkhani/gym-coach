@@ -8,6 +8,7 @@ Single-file offline PWA (`index.html`, ~430 KB, fonts embedded) for one person's
 - Live: https://engineerahkhani.github.io/gym-coach/
 - Repo: git@github.com:engineerahkhani/gym-coach.git
 - Deploy: push to `main` → GitHub Pages. Bump `CACHE` in `sw.js` (`pocketcoach-vN`) on every release or phones keep the old version. On the phone, close and reopen the app twice after a deploy.
+- When Claude writes files through the device bridge, it must use a NEW staged filename for every write (reusing a path can deliver the previous snapshot); verify with grep on the device before committing.
 - Claude's cloud session cannot push (no network/SSH from the device bridge). Claude writes files + commits; the user runs `git push`. If git leaves lock files: `rm -f .git/index.lock .git/HEAD.lock .git/objects/maintenance.lock`.
 - No Persian comments in code. Commit messages in English.
 
