@@ -30,9 +30,11 @@ Single-file offline PWA (`index.html`, ~430 KB, fonts embedded) for one person's
 - Short version: first 3 exercises, 2 sets, no finisher.
 - Leg volume was reduced (lunge 3→2, goblet squat removed, bike interval removed) because of the uphill ride home. Squat/RDL/hip thrust kept.
 
-## Home session (v20)
-Gym program has a 4th session `H` («جلسهٔ خانه · کالیستنیکس مداری», `home:true` in `WG`): push-up 3, air squat 3, walking lunge 2, burpee 3, mountain climber 3, hollow 3; finisher superman 2, sit-up 2. Rotation A → B → C → H. `settings.home` (default true) toggles it in Settings (gym mode only); `nextWorkout()` skips `H` when off. `sessMeta(w)` gives icon/duration/warm-up per session (H uses `WARMC`, ~25 min, flame icon). `HOME_IDS` makes those bodyweight ids visible in the gym library. `wlab('H')` = «خانه». The separate cali mode stays for no-gym periods.
+## Home session + bodyweight in gym (v21)
+`W.H` (home calisthenics, `home:true`) is NOT in the rotation: `nextWorkout()` cycles only non-home keys (A→B→C). It starts on demand from a button in the «فعالیت‌های دیگر» card on Today (`data-start="H"`), like swim/tennis; logged as a normal session with `w:'H'` (`wlab` → «خانه»). The `settings.home` toggle is gone (key left harmless). Each gym session carries one bodyweight movement to learn: A `pushup`×2, B `burpee`×2, C `dips`×2 (`dips` added to `HOME_IDS` so the gym library shows it).
 
+## Bar weight (v21)
+For `EX[id].bar` exercises the set row takes **plates per side** (`data-f="side"`, header «هر طرف», step `inc/2`); stored `s.w` stays the TOTAL (`totalOf`/`sideOf`, `barOf(ex)` = `settings.barW` (20) or `settings.ezBar` (10) when `ex.bar===10`). A tiny `.tot` under the number shows the total. Suggestions, warm-ups, PR toast and plate calc print `wtxt()` = "۴۰ کیلو (هر طرف ۱۰)". Settings has «وزن میلهٔ خالی» and «میلهٔ خم پشت‌بازو». History/e1RM untouched (totals).
 ## Training modes (v16)
 `settings.mode` = `gym` (default, the A/B/C program above) or `cali` (military-style calisthenics). Segment control in Settings → «برنامهٔ تمرینی». `MODES` holds per-mode `W`, `FIN`, `WARM`, labels, week text; `applyMode()` copies the active set into the globals `W`/`FIN`/`WARM` (called from `load()`, on switch, after restore/reset). `nextWorkout()` cycles only over sessions of the active mode (`session.mode`, missing = gym). History, nutrition, measures and activities are shared.
 
