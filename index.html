@@ -344,9 +344,12 @@ Object.assign(EX,{
  situp:{c:1,mg:['میان‌تنه'],name:'درازنشست',m:'شکم، خم‌کنندهٔ ران',eq:'تشک',range:[15,25],inc:3,rest:45,alt:'crunch',
   cues:['زانو خم ۹۰ درجه، پاها روی زمین (یا زیر چیزی)','دست‌ها روی سینه یا کنار گوش','با بازدم تا نشستن کامل بالا بیا','آرام پایین تا کتف‌ها زمین را لمس کند'],mist:['کشیدن گردن با دست','پرتاب تنه با شتاب'],w0:'ریتم تست نظامی: ۱ تکرار در ۲ ثانیه.'},
 });
-EX.deadhang.altc='plank';EX.chinneg.altc='deadhang';
+EX.pullladder={mg:['پشت','بازو'],name:'نردبان بارفیکس',m:'زیربغل، دوسر، کتف',eq:'بارفیکس + پله یا جعبه',range:[1,3],start:1,unit:'تکرار کامل',inc:1,rest:120,alt:'chinneg',
+ cues:['هر ست: اول بارفیکس کامل (از آویزان با دست صاف تا چانه بالای میله)','بعدش ۳ منفی: با پله برو بالای میله و ۴ ثانیه آرام پایین بیا تا دست صاف شود','شانه‌ها کمی پایین و عقب؛ کتف موقع آویزان شل نشود','فقط تکرارهای کامل را ثبت کن؛ منفی‌ها همیشه ۳ تا','۲ دقیقه استراحت بین ست‌ها؛ این حرکت را خسته شروع نکن'],
+ mist:['نصفه بالا آمدن (چانه زیر میله)','رها کردن سریع در منفی','تاب دادن بدن برای بالا رفتن'],w0:'۳ ست × (۱ کامل + ۳ منفی ۴ ثانیه‌ای). وقتی هر ۳ ست ۳ تکرار کامل شد، منفی‌ها را حذف می‌کنیم و می‌رویم ۳ ست × ۳ تا ۵ بارفیکس.'};
+EX.deadhang.altc='plank';EX.chinneg.altc='deadhang';EX.pullup.alt='pullladder';EX.chinup.alt='pullladder';EX.deadhang.range=[30,45];
 const CALI=Object.keys(EX).filter(id=>EX[id].c);
-const SHARED=['plank','sideplank','deadbug','deadhang','kneeraise','legraise','crunch','chinneg'];
+const SHARED=['plank','sideplank','deadbug','deadhang','kneeraise','legraise','crunch','chinneg','pullladder'];
 const PROG={bodyweight:new Set([...SHARED,...CALI])};
 const mode=()=>(S&&S.settings&&S.settings.mode)||'gym';
 const altOf=id=>(mode()==='cali'&&EX[id].altc)||EX[id].alt;
@@ -364,9 +367,9 @@ function e1rm(w,r){return r>0?Math.round(w*(1+r/30)):0;}
 const WG={
  A:{name:'جلسهٔ A · قدرت پایین‌تنه و سینه',list:[['squat',3],['bench',3],['row',3],['plank',3],['farmer',2]]},
  B:{name:'جلسهٔ B · پشت بدن و سرشانه',list:[['rdl',3],['ohp',3],['latpull',3],['lunge',2],['deadbug',3]]},
- C:{name:'جلسهٔ C · سینه، پشت، باسن و میان‌تنه',list:[['hipthrust',3],['incline',3],['cablerow',3],['sideplank',3],['curl',2],['skull',2]]},
+ C:{name:'جلسهٔ C · سینه، پشت، باسن و میان‌تنه',list:[['hipthrust',3],['incline',3],['cablerow',3],['pullladder',3],['sideplank',3],['curl',2],['skull',2]]},
 };
-const FING={A:[['deadhang',2],['kneeraise',2]],B:[['legraise',2],['crunch',2]],C:[['chinneg',2],['deadhang',2]]};
+const FING={A:[['deadhang',2],['kneeraise',2]],B:[['legraise',2],['crunch',2]],C:[['deadhang',2]]};
 const WARMG=['۵ دقیقه دوچرخه یا تردمیل آرام','۱۰ اسکوات بدون وزنه','۱۰ چرخش شانه هر جهت + ۱۰ هیپ هینج','یک ست سبک (۵۰٪ وزنه) از حرکت اول'];
 const WC={
  '1':{name:'جلسهٔ ۱ · بالاتنه و تست‌محور',list:[['pushup',4],['pullup',4],['dips',3],['airsquat',3],['plank',3]]},
@@ -412,6 +415,7 @@ const POSES={
  pikepushup:[{t:110,th:-24,sh:-24,ua:0,fa:0,ax:40},{t:125,th:-24,sh:-24,ua:-30,fa:45,ax:40}],
  pullup:[{t:0,th:5,sh:-10,hipH:52,ua:180,fa:180,prop:'barup',hipX:60},{t:0,th:15,sh:-50,hipH:70,ua:195,fa:330,prop:'barup',hipX:60}],
  chinup:[{t:0,th:5,sh:-10,hipH:52,ua:180,fa:180,prop:'barup',hipX:60},{t:0,th:15,sh:-50,hipH:70,ua:195,fa:330,prop:'barup',hipX:60}],
+ pullladder:[{t:0,th:15,sh:-50,hipH:70,ua:195,fa:330,prop:'barup',hipX:60},{t:0,th:5,sh:-10,hipH:52,ua:180,fa:180,prop:'barup',hipX:60}],
  dips:[{t:0,th:62,sh:62,hipH:21,ua:-15,fa:-15,prop:'box',hipX:45},{t:0,th:78,sh:78,hipH:9,ua:-75,fa:10,prop:'box',hipX:45}],
  airsquat:[{t:5,th:0,sh:0,ua:10,fa:10},{t:35,th:75,sh:-25,ua:95,fa:95}],
  jumpsquat:[{t:35,th:75,sh:-25,hipH:25,ua:95,fa:95,hipX:60},{t:0,th:8,sh:-8,hipH:48,ua:170,fa:170,hipX:60}],
@@ -466,6 +470,7 @@ const CAPS={
  pikepushup:['باسن بالا، شکل ۸ معکوس','سر به سمت زمین، آرنج رو به عقب'],
  pullup:['آویزان کامل، کتف پایین','چانه بالای میله، بدون تاب'],
  chinup:['کف دست رو به صورت، آویزان کامل','چانه بالای میله، مکث'],
+ pullladder:['۱ کامل: چانه بالای میله','۳ منفی: ۴ ثانیه آرام پایین'],
  dips:['دست لبهٔ نیمکت، باسن جلو','آرنج ۹۰ درجه، پشت نزدیک نیمکت'],
  airsquat:['ایستاده: دست‌ها جلو','پایین: ران موازی، پاشنه روی زمین'],
  jumpsquat:['پایین: اسکوات کامل','بپر؛ فرود نرم با زانوی خم'],
@@ -548,7 +553,7 @@ function suggest(exId,targetSets){const ex=EX[exId],last=lastSets(exId);if(!last
  const rirs=last.sets.map(s=>s.rir===null||s.rir===undefined?null:+s.rir).filter(x=>x!==null);const easy=rirs.length&&rirs.every(x=>x>=3),hard=rirs.filter(x=>x===0).length>=2;
  const allTop=(last.sets.length>=targetSets&&reps.every(r=>r>=hi))||(easy&&reps.every(r=>r>=lo)),anyLow=reps.filter(r=>r<lo).length>=2||(hard&&reps.some(r=>r<lo));
  const pw=progWeek();const dl=x=>pw.deload&&x?Math.max(0,r25(x*0.9)):x;
- if(PROG.bodyweight.has(exId)){const r=Math.max(...reps);if(pw.deload&&r&&ex.rest>0){const dr=Math.max(lo,Math.round(r*0.8));return {w:null,r:dr,msg:`هفتهٔ سبک: ${fa(dr)} ${ex.unit||'تکرار'}، حدود ۲۰٪ کمتر از دفعهٔ قبل، آرام و تمیز.`,kind:'deload'};}const nxt=allTop?Math.max(r,hi)+ex.inc:r;return {w:null,r:nxt,msg:allTop?`دفعهٔ قبل همهٔ ست‌ها کامل بود؛ این بار ${fa(nxt)} ${ex.unit||'تکرار'} بزن.`:`مثل دفعهٔ قبل: ${fa(r)} ${ex.unit||'تکرار'}.`,kind:allTop?'up':'same'};}
+ if(PROG.bodyweight.has(exId)){const r=Math.max(...reps);if(pw.deload&&r&&ex.rest>0){const dr=Math.max(lo,Math.round(r*0.8));return {w:null,r:dr,msg:`هفتهٔ سبک: ${fa(dr)} ${ex.unit||'تکرار'}، حدود ۲۰٪ کمتر از دفعهٔ قبل، آرام و تمیز.`,kind:'deload'};}const nxt=allTop?Math.max(r,hi)+ex.inc:r;if(exId==='pullladder'&&allTop)return {w:null,r:hi,msg:'هر ۳ ست ۳ تکرار کامل شد. منفی‌ها را حذف کن و ۳ ست × ۳ تا ۵ بارفیکس کامل بزن؛ ۵ که شد، به من بگو حرکت را عوض کنیم.',kind:'up'};return {w:null,r:nxt,msg:allTop?`دفعهٔ قبل همهٔ ست‌ها کامل بود؛ این بار ${fa(nxt)} ${ex.unit||'تکرار'} بزن.`:`مثل دفعهٔ قبل: ${fa(r)} ${ex.unit||'تکرار'}.`,kind:allTop?'up':'same'};}
  if(pw.deload)return {w:dl(w),msg:`هفتهٔ سبک: ۱۰٪ کمتر از دفعهٔ قبل (${fa(dl(w))} کیلو)، همان تکرارها، تمیز و راحت. هفتهٔ بعد دوباره سنگین می‌شود.`,kind:'deload'};
  if(allTop)return {w:w+ex.inc,msg:easy&&!reps.every(r=>r>=hi)?`دفعهٔ قبل ۳+ تکرار در توان مانده بود؛ ${fa(ex.inc)} کیلو اضافه کن.`:`همهٔ ست‌ها به ${fa(hi)} تکرار رسید؛ ${fa(ex.inc)} کیلو اضافه کن.`,kind:'up'};
  if(anyLow)return {w:Math.max(0,w-ex.inc),msg:`دفعهٔ قبل تکرارها کم شد؛ ${fa(ex.inc)} کیلو کم کن و فرم را درست کن.`,kind:'down'};
@@ -850,7 +855,7 @@ function viewLive(){const lv=S.live,e=lv.ex[lv.i],ex=EX[e.id],done=lv.ex.reduce(
  ${pl?`<p class="muted" style="margin:8px 0 0">${ic('dumbbell')}برای ${fa(ww)} کیلو، هر طرف هالتر ${fa(ex.bar)}: <b>${pl.out.length?pl.out.map(fa).join(' + '):'بدون صفحه'}</b>${pl.rest>0.01?` (${fa(pl.rest)} کیلو گرد شد)`:''}</p>`:''}
  ${best?`<p class="muted" style="margin:6px 0 0">${ic('flame')}بهترین وزنهٔ قبلی: ${fa(best)} کیلو</p>`:''}
  <div class="hdr" style="margin-top:10px"><span>ست</span><span>${bw?'—':'وزنه'}</span><span>${ex.unit||'تکرار'}</span><span></span></div>
- <div class="sets">${e.sets.map((s,i)=>{const stepW=ex.bar?2.5:(ex.inc||2.5);const rv=s.r===''||s.r===null?'':s.r;const rph=(lastSets(e.id)||{sets:[]}).sets[i]?.r||ex.range[1];return `<div class="setrow ${s.done?'ok':''}"><span class="n">${fa(i+1)}${s.done&&s.w&&+s.w>best&&best>0?'<i class="pr">PR</i>':''}</span>
+ <div class="sets">${e.sets.map((s,i)=>{const stepW=ex.bar?2.5:(ex.inc||2.5);const rv=s.r===''||s.r===null?'':s.r;const rph=(lastSets(e.id)||{sets:[]}).sets[i]?.r||ex.start||ex.range[1];return `<div class="setrow ${s.done?'ok':''}"><span class="n">${fa(i+1)}${s.done&&s.w&&+s.w>best&&best>0?'<i class="pr">PR</i>':''}</span>
  ${bw?'<span class="stp dis">—</span>':`<span class="stp"><button data-stp="w" data-set="${i}" data-d="-${stepW}" aria-label="کمتر">−</button><input type="number" step="0.5" inputmode="decimal" data-set="${i}" data-f="w" value="${s.w}" placeholder="۰"><button data-stp="w" data-set="${i}" data-d="${stepW}" aria-label="بیشتر">+</button></span>`}
  <span class="stp"><button data-stp="r" data-set="${i}" data-d="-1" aria-label="کمتر">−</button><input type="number" inputmode="numeric" data-set="${i}" data-f="r" value="${rv}" placeholder="${rph}"><button data-stp="r" data-set="${i}" data-d="1" aria-label="بیشتر">+</button></span>
  <button class="btn done ${s.done?'':'primary'}" data-done="${i}">${s.done?'✓':'ثبت'}</button>
@@ -863,10 +868,10 @@ function viewLive(){const lv=S.live,e=lv.ex[lv.i],ex=EX[e.id],done=lv.ex.reduce(
 function liveInput(ev){const lv=S.live,e=lv.ex[lv.i];{const t=ev.target;if(t.dataset.set!==undefined){const v=t.dataset.f==='rir'?(t.value===''?null:+t.value):t.value;const i=+t.dataset.set;e.sets[i][t.dataset.f]=v;if(t.dataset.f==='w'&&i===0){e.sets.forEach((x,k)=>{if(k>0&&!x.done)x.w=v;});}save();}if(t.id==='l-note'){lv.note=t.value;save();}}}
 function liveClick(ev){const m=$('#main'),lv=S.live,e=lv.ex[lv.i];{const b=ev.target.closest('button');if(!b)return;
   if(b.dataset.done!==undefined){const i=+b.dataset.done,s=e.sets[i];if(s.done){s.done=false;save();render();return;}
-   if(s.r===''||s.r===null){const ph=(lastSets(e.id)||{sets:[]}).sets[i]?.r||EX[e.id].range[1];s.r=ph;}
+   if(s.r===''||s.r===null){const ph=(lastSets(e.id)||{sets:[]}).sets[i]?.r||EX[e.id].start||EX[e.id].range[1];s.r=ph;}
    if((s.w===''||s.w===null)&&!(PROG.bodyweight.has(e.id)||e.id==='bike')){const inp=m.querySelector(`input[data-set="${i}"][data-f="w"]`);if(inp)inp.focus();toast('وزنه را وارد کن (با + و − یا تایپ)');return;}
    s.done=true;const prevBest=bestBefore(e.id);save();render();if(prevBest&&+s.w>prevBest)toast(`رکورد جدید! ${fa(s.w)} کیلو، بیشتر از ${fa(prevBest)} 🏆`);const rest=Math.round(EX[e.id].rest*S.settings.restScale);const lastSet=e.sets.every(x=>x.done);if(rest>0)restTimer(rest,lastSet);}
-  if(b.dataset.stp){const i=+b.dataset.set,f=b.dataset.stp,d=+b.dataset.d,st=e.sets[i];let cur=st[f]===''||st[f]===null||st[f]===undefined?null:+st[f];if(cur===null){cur=f==='r'?(+((lastSets(e.id)||{sets:[]}).sets[i]||{}).r||EX[e.id].range[1]):0;}let nv=Math.max(0,Math.round((cur+d)*4)/4);if(f==='r')nv=Math.max(0,Math.round(nv));st[f]=nv;if(f==='w'&&i===0){e.sets.forEach((x,k)=>{if(k>0&&!x.done)x.w=nv;});}save();render();return;}
+  if(b.dataset.stp){const i=+b.dataset.set,f=b.dataset.stp,d=+b.dataset.d,st=e.sets[i];let cur=st[f]===''||st[f]===null||st[f]===undefined?null:+st[f];if(cur===null){cur=f==='r'?(+((lastSets(e.id)||{sets:[]}).sets[i]||{}).r||EX[e.id].start||EX[e.id].range[1]):0;}let nv=Math.max(0,Math.round((cur+d)*4)/4);if(f==='r')nv=Math.max(0,Math.round(nv));st[f]=nv;if(f==='w'&&i===0){e.sets.forEach((x,k)=>{if(k>0&&!x.done)x.w=nv;});}save();render();return;}
   if(b.dataset.rir){const i=+b.dataset.set,n=+b.dataset.rir,st=e.sets[i];st.rir=st.rir===n?null:n;save();render();return;}
   if(b.dataset.wu!==undefined){lv.wu=lv.wu||[false,false,false,false];lv.wu[+b.dataset.wu]=!lv.wu[+b.dataset.wu];save();render();return;}
   if(b.id==='l-hold'){holdTimer(+b.dataset.sec);return;}

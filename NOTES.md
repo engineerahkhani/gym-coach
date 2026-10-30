@@ -12,6 +12,7 @@ Single-file offline PWA (`index.html`, ~430 KB, fonts embedded) for one person's
 - No Persian comments in code. Commit messages in English.
 
 ## Person (as of 2026-10-07)
+- Note (2026-10-30): user had been logging barbell weight as plates-per-side; data was converted to total (2×side + bar) via a corrected backup. Abdomen 100 cm on 10-07 was measured midday after lunch — not a fasted baseline; first fasted measurement replaces it.
 - Male, 178 cm, 85.5 kg, waist 92, abdomen (navel) 100. BMI ~27, abd/height 0.56 (target < 0.5 → ~89 cm).
 - Goals in order: smaller belly, strength/agility, muscle/shape, consistency. Worried about face getting gaunt → slow loss (0.4–0.6 kg/week).
 - No injuries, no meds, no supplements. Gets migraines when under-eating / meals too far apart.
@@ -24,7 +25,7 @@ Single-file offline PWA (`index.html`, ~430 KB, fonts embedded) for one person's
 
 - **A**: barbell squat 3×8–10, bench press 3×8–10, barbell row 3×8–12, plank 3×30–45s, farmer walk 2×30–40s. Finisher: dead hang 2×20–40s, hanging knee raise 2×8–12.
 - **B**: dumbbell RDL 3×8–12, dumbbell OHP 3×8–12, lat pulldown 3×8–12, lunge 2×8–10/leg, dead bug 3×8–10. Finisher: hanging leg raise 2×6–10, crunch 2×12–20.
-- **C**: hip thrust 3×10–12, incline DB press 3×8–12, seated cable row 3×10–12, side plank 3×20–30s/side, DB curl 2×10–12, lying triceps ext 2×10–12. Finisher: chin-up negatives 2×3–5, dead hang 2×.
+- **C**: hip thrust 3×10–12, incline DB press 3×8–12, seated cable row 3×10–12, pull-up ladder 3×(1 full + 3 negatives of 4 s; only full reps logged, `start:1`, range 1–3; at 3×3 the app says drop negatives and do 3×3–5), side plank 3×20–30s/side, DB curl 2×10–12, lying triceps ext 2×10–12. Finisher: dead hang 2×30–45 s. (v17; chin-up negatives moved out of the finisher.)
 - Warm-up (4-item checklist inside the session): 5 min bike/treadmill, 10 bodyweight squats, shoulder circles + hip hinges, one light set of first exercise.
 - Short version: first 3 exercises, 2 sets, no finisher.
 - Leg volume was reduced (lunge 3→2, goblet squat removed, bike interval removed) because of the uphill ride home. Squat/RDL/hip thrust kept.
@@ -74,7 +75,7 @@ Targets: 0.4–0.6 kg/week; weigh weekly (same day, fasted), waist/abdomen every
 - Service worker: cache-first with background refresh.
 
 ## Version log
-v1 stick figures · v2 human figures, Vazirmatn, icons, ratings, bike commute · v3 plate calc, warm-ups, PR/volume, RIR, muscle sets, deload · v4 font switcher · v5 theme · v6 stepper set rows · v7 nutrition tab · v8 tri-state checklist, flags, adherence history · v9 food log · v10 keep scroll · v11 no double-tap zoom, hold timer, finishers, warm-up in session, Today reorder · v12 no input zoom, measurement reminder, weight-only entries · v13 tap-to-log food with household units + monthly CSV export, Liquid Glass restyle · v14 edit any day's food from the calendar / week strip · v15 custom foods become reusable items, tab bar flush to bottom edge · v16 switchable military-calisthenics program + 4-week fitness test.
+v1 stick figures · v2 human figures, Vazirmatn, icons, ratings, bike commute · v3 plate calc, warm-ups, PR/volume, RIR, muscle sets, deload · v4 font switcher · v5 theme · v6 stepper set rows · v7 nutrition tab · v8 tri-state checklist, flags, adherence history · v9 food log · v10 keep scroll · v11 no double-tap zoom, hold timer, finishers, warm-up in session, Today reorder · v12 no input zoom, measurement reminder, weight-only entries · v13 tap-to-log food with household units + monthly CSV export, Liquid Glass restyle · v14 edit any day's food from the calendar / week strip · v15 custom foods become reusable items, tab bar flush to bottom edge · v16 switchable military-calisthenics program + 4-week fitness test · v17 pull-up ladder as a main movement in C; `EX[id].start` seeds the first-session rep placeholder.
 
 ## Ideas not done (deliberately)
 Calendar reminders (.ics), progress photos, Apple Watch, social features, 12-week block periodization beyond deload weeks, Peyda font (couldn't fetch).
