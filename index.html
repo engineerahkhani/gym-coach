@@ -139,6 +139,7 @@ ul.tips li{margin-bottom:3px}
 .stp{direction:ltr;display:flex;align-items:center;background:var(--well);border:1px solid var(--lined);border-radius:14px;height:44px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.12)}
 .stp button{width:30px;height:100%;border:0;background:none;color:var(--muted);font-size:20px;line-height:1;padding:0;flex:none}
 .stp button:active{background:var(--surface2)}
+.stp{position:relative}.stp .tot{position:absolute;left:50%;bottom:2px;transform:translateX(-50%);font-size:9.5px;line-height:1;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;pointer-events:none}.stp.side input{padding-bottom:9px;font-size:16px;letter-spacing:-.02em}.stp input::-webkit-inner-spin-button,.stp input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}.stp input{-moz-appearance:textfield;appearance:textfield}
 .stp input{flex:1;min-width:0;width:100%;border:0;background:none;text-align:center;padding:0;height:100%;font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;border-radius:0;box-shadow:none}
 .stp input:focus{outline:none;background:var(--surface2);box-shadow:none}
 .stp.dis{justify-content:center;color:var(--muted)}
@@ -258,7 +259,7 @@ const jshort=iso=>{const j=toJalali(iso);return fa(j.jm)+'/'+fa(j.jd);};
 
 /* ---------- storage ---------- */
 const KEY='pocketcoach_v1';
-const DEFAULT={profile:{height:null,age:null},settings:{sound:true,wake:true,restScale:1,font:'vazirmatn',theme:'dark',mode:'gym',home:true},measures:[],sessions:[],activities:[],nutrition:{},foods:{},tests:[],live:null};
+const DEFAULT={profile:{height:null,age:null},settings:{sound:true,wake:true,restScale:1,font:'vazirmatn',theme:'dark',mode:'gym',home:true,barW:20,ezBar:10},measures:[],sessions:[],activities:[],nutrition:{},foods:{},tests:[],live:null};
 let S;
 function load(){try{const raw=localStorage.getItem(KEY);S=raw?Object.assign({},DEFAULT,JSON.parse(raw)):JSON.parse(JSON.stringify(DEFAULT));}catch(e){S=JSON.parse(JSON.stringify(DEFAULT));}S.settings=Object.assign({},DEFAULT.settings,S.settings);S.nutrition=S.nutrition||{};Object.values(S.nutrition).forEach(n=>{if(n.log){n.meals=(n.meals||[]).concat(n.log.map(x=>({t:x.t,txt:x.txt})));delete n.log;}});S.tests=S.tests||[];applyMode();applyFont();}
 function applyFont(){const r=document.documentElement;r.dataset.font=S.settings.font||'vazirmatn';const t=S.settings.theme||'dark';if(t==='system')delete r.dataset.theme;else r.dataset.theme=t;const m=document.querySelector('meta[name=theme-color]');if(m)m.content=t==='light'?'#eceef4':'#0b0d12';}
@@ -362,6 +363,11 @@ const MG=[['پا',6],['باسن',6],['پشت',6],['سینه',6],['شانه',3],[
 const PLATES=[20,15,10,5,2.5,1.25];
 function plates(total,bar){if(!total||total<=bar)return null;let side=(total-bar)/2,out=[];for(const p of PLATES){while(side>=p-0.001){out.push(p);side-=p;}}return {out,rest:side};}
 function r25(x){return Math.round(x/2.5)*2.5;}
+/* bar weight: the user enters plates per side; the app stores the total (bar + 2×side) */
+const barOf=ex=>!ex||!ex.bar?0:(ex.bar===10?+S.settings.ezBar||10:+S.settings.barW||20);
+const sideOf=(ex,w)=>w===''||w===null||w===undefined?'':Math.max(0,(+w-barOf(ex))/2);
+const totalOf=(ex,side)=>side===''||side===null||side===undefined?'':barOf(ex)+2*(+side);
+const wtxt=(exId,w)=>{const ex=EX[exId];if(!ex||!ex.bar||!w)return `${fa(w)} کیلو`;const sd=sideOf(ex,w);return `${fa(w)} کیلو (هر طرف ${sd>0?fa(sd):'بدون صفحه'})`;};
 function progWeek(){const first=S.sessions.length?S.sessions.map(x=>x.date).sort()[0]:null;if(!first)return {n:1,deload:false,start:null};const days=Math.round((new Date(todayISO()+'T12:00:00')-new Date(first+'T12:00:00'))/86400000);const n=Math.floor(days/7)+1;return {n,deload:n%4===0,start:first};}
 function bestBefore(exId){let b=0;S.sessions.forEach(x=>x.ex.filter(e=>e.id===exId).forEach(e=>e.sets.forEach(st=>{if(st.done&&st.w&&st.r&&st.w>b)b=st.w;})));return b;}
 function volume(ex){return ex.reduce((a,e)=>a+e.sets.reduce((b,st)=>b+(st.done&&st.w&&st.r?st.w*st.r:0),0),0);}
@@ -369,13 +375,13 @@ function e1rm(w,r){return r>0?Math.round(w*(1+r/30)):0;}
 
 /* ---------- workouts ---------- */
 const WG={
- A:{name:'جلسهٔ A · قدرت پایین‌تنه و سینه',list:[['squat',3],['bench',3],['row',3],['plank',3],['farmer',2]]},
- B:{name:'جلسهٔ B · پشت بدن و سرشانه',list:[['rdl',3],['ohp',3],['latpull',3],['lunge',2],['deadbug',3]]},
- C:{name:'جلسهٔ C · سینه، پشت، باسن و میان‌تنه',list:[['hipthrust',3],['incline',3],['cablerow',3],['pullladder',3],['sideplank',3],['curl',2],['skull',2]]},
+ A:{name:'جلسهٔ A · قدرت پایین‌تنه و سینه',list:[['squat',3],['bench',3],['row',3],['pushup',2],['plank',3],['farmer',2]]},
+ B:{name:'جلسهٔ B · پشت بدن و سرشانه',list:[['rdl',3],['ohp',3],['latpull',3],['lunge',2],['burpee',2],['deadbug',3]]},
+ C:{name:'جلسهٔ C · سینه، پشت، باسن و میان‌تنه',list:[['hipthrust',3],['incline',3],['cablerow',3],['pullladder',3],['dips',2],['sideplank',3],['curl',2],['skull',2]]},
  H:{name:'جلسهٔ خانه · کالیستنیکس مداری',home:true,list:[['pushup',3],['airsquat',3],['bwlunge',2],['burpee',3],['mountainclimber',3],['hollow',3]]},
 };
 const FING={A:[['deadhang',2],['kneeraise',2]],B:[['legraise',2],['crunch',2]],C:[['deadhang',2]],H:[['superman',2],['situp',2]]};
-const HOME_IDS=new Set(['pushup','airsquat','bwlunge','burpee','mountainclimber','hollow','superman','situp']);
+const HOME_IDS=new Set(['pushup','airsquat','bwlunge','burpee','mountainclimber','hollow','superman','situp','dips']);
 /* per-session meta: the home session is bodyweight, shorter, warms up like the calisthenics program */
 const sessMeta=w=>W[w]&&W[w].home?{icon:'flame',full:'~۲۵ دقیقه',warm:WARMC,label:'خانه'}:{icon:MODES[mode()].icon,full:MODES[mode()].full,warm:WARM,label:MODES[mode()].label};
 const WARMG=['۵ دقیقه دوچرخه یا تردمیل آرام','۱۰ اسکوات بدون وزنه','۱۰ چرخش شانه هر جهت + ۱۰ هیپ هینج','یک ست سبک (۵۰٪ وزنه) از حرکت اول'];
@@ -586,11 +592,11 @@ function suggest(exId,targetSets){const ex=EX[exId],last=lastSets(exId);if(!last
  const allTop=(last.sets.length>=targetSets&&reps.every(r=>r>=hi))||(easy&&reps.every(r=>r>=lo)),anyLow=reps.filter(r=>r<lo).length>=2||(hard&&reps.some(r=>r<lo));
  const pw=progWeek();const dl=x=>pw.deload&&x?Math.max(0,r25(x*0.9)):x;
  if(PROG.bodyweight.has(exId)){const r=Math.max(...reps);if(pw.deload&&r&&ex.rest>0){const dr=Math.max(lo,Math.round(r*0.8));return {w:null,r:dr,msg:`هفتهٔ سبک: ${fa(dr)} ${ex.unit||'تکرار'}، حدود ۲۰٪ کمتر از دفعهٔ قبل، آرام و تمیز.`,kind:'deload'};}const nxt=allTop?Math.max(r,hi)+ex.inc:r;if(exId==='pullladder'&&allTop)return {w:null,r:hi,msg:'هر ۳ ست ۳ تکرار کامل شد. منفی‌ها را حذف کن و ۳ ست × ۳ تا ۵ بارفیکس کامل بزن؛ ۵ که شد، به من بگو حرکت را عوض کنیم.',kind:'up'};return {w:null,r:nxt,msg:allTop?`دفعهٔ قبل همهٔ ست‌ها کامل بود؛ این بار ${fa(nxt)} ${ex.unit||'تکرار'} بزن.`:`مثل دفعهٔ قبل: ${fa(r)} ${ex.unit||'تکرار'}.`,kind:allTop?'up':'same'};}
- if(pw.deload)return {w:dl(w),msg:`هفتهٔ سبک: ۱۰٪ کمتر از دفعهٔ قبل (${fa(dl(w))} کیلو)، همان تکرارها، تمیز و راحت. هفتهٔ بعد دوباره سنگین می‌شود.`,kind:'deload'};
- if(allTop)return {w:w+ex.inc,msg:easy&&!reps.every(r=>r>=hi)?`دفعهٔ قبل ۳+ تکرار در توان مانده بود؛ ${fa(ex.inc)} کیلو اضافه کن.`:`همهٔ ست‌ها به ${fa(hi)} تکرار رسید؛ ${fa(ex.inc)} کیلو اضافه کن.`,kind:'up'};
- if(anyLow)return {w:Math.max(0,w-ex.inc),msg:`دفعهٔ قبل تکرارها کم شد؛ ${fa(ex.inc)} کیلو کم کن و فرم را درست کن.`,kind:'down'};
- return {w,msg:`همان ${fa(w)} کیلو؛ سعی کن یک تکرار بیشتر از دفعهٔ قبل بزنی.`,kind:'same'};}
-function nextWorkout(){const keys=Object.keys(W).filter(k=>!(W[k].home&&S.settings.home===false));const ss=S.sessions.filter(s=>!s.short&&(s.mode||'gym')===mode());if(!ss.length)return keys[0];const i=keys.indexOf(ss[ss.length-1].w);return keys[(i+1)%keys.length];}
+ if(pw.deload)return {w:dl(w),msg:`هفتهٔ سبک: ۱۰٪ کمتر از دفعهٔ قبل (${wtxt(exId,dl(w))})، همان تکرارها، تمیز و راحت. هفتهٔ بعد دوباره سنگین می‌شود.`,kind:'deload'};
+ if(allTop)return {w:w+ex.inc,msg:easy&&!reps.every(r=>r>=hi)?`دفعهٔ قبل ۳+ تکرار در توان مانده بود؛ ${fa(ex.inc)} کیلو اضافه کن${ex.bar?` (هر طرف ${fa(ex.inc/2)})`:''} → ${wtxt(exId,w+ex.inc)}.`:`همهٔ ست‌ها به ${fa(hi)} تکرار رسید؛ ${fa(ex.inc)} کیلو اضافه کن${ex.bar?` (هر طرف ${fa(ex.inc/2)})`:''} → ${wtxt(exId,w+ex.inc)}.`,kind:'up'};
+ if(anyLow)return {w:Math.max(0,w-ex.inc),msg:`دفعهٔ قبل تکرارها کم شد؛ ${fa(ex.inc)} کیلو کم کن${ex.bar?` (هر طرف ${fa(ex.inc/2)})`:''} → ${wtxt(exId,Math.max(0,w-ex.inc))}، و فرم را درست کن.`,kind:'down'};
+ return {w,msg:`همان ${wtxt(exId,w)}؛ سعی کن یک تکرار بیشتر از دفعهٔ قبل بزنی.`,kind:'same'};}
+function nextWorkout(){const keys=Object.keys(W).filter(k=>!W[k].home);const ss=S.sessions.filter(s=>!s.short&&(s.mode||'gym')===mode());if(!ss.length)return keys[0];const i=keys.indexOf(ss[ss.length-1].w);return keys[(i+1)%keys.length];}
 
 /* ---------- icons ---------- */
 const ICON={
@@ -651,9 +657,9 @@ function viewToday(){const w=nextWorkout(),ws=weekStats();const msAll=S.measures
  <div class="row"><button class="btn primary grow" data-start="${w}" data-short="0">${ic('play')}شروع جلسهٔ کامل · ${sessMeta(w).full}</button></div>
  <div class="row" style="margin-top:8px"><button class="btn grow" data-start="${w}" data-short="1">${ic('timer')}نسخهٔ کوتاه · ۲۰ دقیقه</button></div>
  <p class="muted" style="margin:8px 0 0">${W[w].home?'بدون وسیله، هر جا که هستی: ۴۵ ثانیه استراحت، تعداد بالا با فرم تمیز. جای روزی که شنا یا تنیس نمی‌روی.':MODES[mode()].shortNote}</p>
- <details style="margin-top:8px"><summary>ترتیب جلسه‌ها را عوض کن</summary><div class="row" style="margin-top:8px">${Object.keys(W).map(k=>`<button class="btn small" data-start="${k}" data-short="0">جلسهٔ ${wlab(k)}</button>`).join('')}</div></details></div>
+ <details style="margin-top:8px"><summary>ترتیب جلسه‌ها را عوض کن</summary><div class="row" style="margin-top:8px">${Object.keys(W).filter(k=>!W[k].home).map(k=>`<button class="btn small" data-start="${k}" data-short="0">جلسهٔ ${wlab(k)}</button>`).join('')}</div></details></div>
  ${mode()==='cali'?ptCard():''}
- <div class="card"><h2>${ic('flame')}فعالیت‌های دیگر</h2><div class="row"><button class="btn grow" data-act="swim">${ic('swim')}شنا</button><button class="btn grow" data-act="tennis">${ic('tennis')}تنیس</button></div><div class="row" style="margin-top:8px"><button class="btn grow" data-act="ride">${ic('bike')}رکاب تا باشگاه</button><button class="btn grow ghost" data-act="rest">${ic('bed')}استراحت</button></div></div>
+ <div class="card"><h2>${ic('flame')}فعالیت‌های دیگر</h2>${mode()==='gym'&&W.H?`<div class="row" style="margin-bottom:8px"><button class="btn grow" data-start="H" data-short="0">${ic('home')}کالیستنیکس در خانه · ~۲۵ دقیقه</button></div><p class="muted" style="margin:-2px 0 10px;font-size:12px">هر وقت خواستی، مثل شنا و تنیس؛ جزو چرخهٔ A → B → C نیست و بدون وسیله است. ${fa(S.sessions.filter(x=>x.w==='H').length)} بار تا حالا.</p>`:''}<div class="row"><button class="btn grow" data-act="swim">${ic('swim')}شنا</button><button class="btn grow" data-act="tennis">${ic('tennis')}تنیس</button></div><div class="row" style="margin-top:8px"><button class="btn grow" data-act="ride">${ic('bike')}رکاب تا باشگاه</button><button class="btn grow ghost" data-act="rest">${ic('bed')}استراحت</button></div></div>
  ${lastM?(()=>{const t=todayISO();const dW=Math.round((new Date(t+'T12:00:00')-new Date(lastM.date+'T12:00:00'))/86400000);const lastAbd=S.measures.filter(m=>m.abd).sort((a,b)=>a.date<b.date?-1:1).pop();const dA=lastAbd?Math.round((new Date(t+'T12:00:00')-new Date(lastAbd.date+'T12:00:00'))/86400000):99;const dueW=7-dW,dueA=14-dA;const over=dueW<=0||dueA<=0;
   return `<div class="card" style="${over?'border-color:var(--warn)':''}"><div class="row"><h2 class="grow">${ic('ruler')}اندازه‌گیری</h2>${over?`<button class="btn small primary" data-goto="body">${ic('plus')}ثبت کن</button>`:''}</div>
   <div class="row" style="font-size:14px;gap:4px 14px"><span>وزن: <b>${dueW<=0?'<span style=\"color:var(--warn)\">موعدش رسیده</span>':fa(dueW)+' روز دیگر'}</b> <span class="muted">(آخرین: ${fa(dW)} روز پیش)</span></span><span>دور شکم: <b>${dueA<=0?'<span style=\"color:var(--warn)\">موعدش رسیده</span>':fa(dueA)+' روز دیگر'}</b> <span class="muted">(${lastAbd?fa(dA)+' روز پیش':'ثبت نشده'})</span></span></div>
@@ -742,9 +748,10 @@ function viewSet(){return `<div class="view">
  <div class="card"><h2>${ic('timer')}تمرین</h2>
  <label class="row" style="justify-content:space-between;min-height:44px"><span>صدای پایان استراحت</span><input type="checkbox" id="s-sound" ${S.settings.sound?'checked':''}></label>
  <label class="row" style="justify-content:space-between;min-height:44px"><span>صفحه حین تمرین روشن بماند</span><input type="checkbox" id="s-wake" ${S.settings.wake?'checked':''}></label>
- <div class="f" style="margin-bottom:10px">برنامهٔ تمرینی<div class="seg" id="s-mode">${[['gym','باشگاه (وزنه)'],['cali','کالیستنیکس (نظامی)']].map(([k,n])=>`<button class="${mode()===k?'on':''}" data-mode="${k}">${n}</button>`).join('')}</div><p class="muted" style="margin:4px 0 0;font-size:12px">${mode()==='cali'?'سه جلسهٔ بدون وزنه با تعداد بالا و استراحت کوتاه، به سبک آمادگی جسمانی ارتش. فقط بارفیکس و یک نیمکت لازم است.':'سه جلسهٔ A/B/C با هالتر و دمبل در باشگاه.'} هر وقت خواستی عوض کن؛ تاریخچه، تغذیه و اندازه‌ها مشترک‌اند و هر برنامه چرخهٔ جلسه‌های خودش را دارد.</p>${mode()==='gym'?`<label class="row" style="justify-content:space-between;min-height:44px;margin-top:6px"><span>جلسهٔ چهارم در خانه (کالیستنیکس)<br><span class="muted" style="font-size:12px">چرخه A → B → C → خانه؛ ۲۵ دقیقه بدون وسیله</span></span><input type="checkbox" id="s-home" ${S.settings.home!==false?'checked':''}></label>`:''}</div>
+ <div class="f" style="margin-bottom:10px">برنامهٔ تمرینی<div class="seg" id="s-mode">${[['gym','باشگاه (وزنه)'],['cali','کالیستنیکس (نظامی)']].map(([k,n])=>`<button class="${mode()===k?'on':''}" data-mode="${k}">${n}</button>`).join('')}</div><p class="muted" style="margin:4px 0 0;font-size:12px">${mode()==='cali'?'سه جلسهٔ بدون وزنه با تعداد بالا و استراحت کوتاه، به سبک آمادگی جسمانی ارتش. فقط بارفیکس و یک نیمکت لازم است.':'سه جلسهٔ A/B/C با هالتر و دمبل در باشگاه.'} هر وقت خواستی عوض کن؛ تاریخچه، تغذیه و اندازه‌ها مشترک‌اند و هر برنامه چرخهٔ جلسه‌های خودش را دارد.</p>${mode()==='gym'?`<p class="muted" style="margin:6px 0 0;font-size:12px">کالیستنیکس خانگی از تب «امروز» هر وقت خواستی شروع می‌شود و در هر جلسهٔ باشگاه هم یکی دو حرکت بدن‌وزنی هست تا یاد بگیری.</p>`:''}</div>
  <div class="f" style="margin-bottom:10px">تم<div class="seg" id="s-theme">${[['dark','تیره'],['light','روشن'],['system','مثل سیستم']].map(([k,n])=>`<button class="${(S.settings.theme||'dark')===k?'on':''}" data-theme-opt="${k}">${n}</button>`).join('')}</div></div>
  <div class="f" style="margin-bottom:10px">فونت اپ<div class="seg" id="s-font">${[['vazirmatn','Vazirmatn'],['sahel','Sahel'],['shabnam','Shabnam'],['system','سیستم']].map(([k,n])=>`<button class="${(S.settings.font||'vazirmatn')===k?'on':''}" data-font="${k}">${n}</button>`).join('')}</div><p class="muted" style="margin:4px 0 0;font-size:12px">نمونه: اسکوات هالتر ۳ ست × ۸–۱۰ تکرار، ۴۲٫۵ کیلو، استراحت ۱۲۰ ثانیه</p></div>
+ <div class="row" style="gap:8px;margin-bottom:10px"><label class="f grow">وزن میلهٔ خالی (کیلو)<input type="number" inputmode="decimal" step="0.5" id="s-bar" value="${S.settings.barW||20}"></label><label class="f grow">میلهٔ خم پشت‌بازو<input type="number" inputmode="decimal" step="0.5" id="s-ezbar" value="${S.settings.ezBar||10}"></label></div><p class="muted" style="margin:-4px 0 10px;font-size:12px">در جلسه فقط صفحه‌های هر طرف را وارد می‌کنی؛ اپ وزن میله را خودش اضافه می‌کند. میلهٔ المپیک استاندارد ۲۰ کیلو است؛ اگر میلهٔ باشگاهت رویش نوشته یا کوتاه‌تر است، همین‌جا عوضش کن.</p>
  <label class="f">زمان استراحت<select id="s-rest"><option value="1" ${S.settings.restScale==1?'selected':''}>پیش‌فرض برنامه</option><option value="0.75" ${S.settings.restScale==0.75?'selected':''}>کوتاه‌تر (۲۵٪ کمتر)</option><option value="1.25" ${S.settings.restScale==1.25?'selected':''}>بلندتر (۲۵٪ بیشتر)</option></select></label></div>
  <div class="card"><h2>${ic('save')}پشتیبان‌گیری</h2><p class="muted" style="margin:0 0 8px">داده‌ها فقط روی همین گوشی ذخیره می‌شوند. هر چند هفته یک نسخه کپی کن و در یادداشت‌ها یا تلگرام ذخیره‌اش کن.</p>
  <div class="row"><button class="btn grow" id="b-copy">کپی نسخهٔ پشتیبان</button><button class="btn grow" id="b-show">نمایش متن</button></div>
@@ -871,8 +878,8 @@ function startWorkout(w,short){const list=(short?W[w].list.slice(0,3).map(([id])
 function viewLive(){const lv=S.live,e=lv.ex[lv.i],ex=EX[e.id],done=lv.ex.reduce((a,x)=>a+x.sets.filter(s=>s.done).length,0),total=lv.ex.reduce((a,x)=>a+x.sets.length,0);
  const min=Math.round((Date.now()-lv.start)/60000);const rest=Math.round(ex.rest*S.settings.restScale);const bw=PROG.bodyweight.has(e.id)||e.id==='bike';
  const vol=volume(lv.ex),best=bestBefore(e.id),pw=progWeek();
- const ww=+(e.sets.find(x=>x.w!=='')||{}).w||0;const pl=ex.bar?plates(ww,ex.bar):null;
- const warm=!bw&&ww>=(ex.bar||0)+10?[[0.5,8],[0.75,4]].map(([f,r],i)=>{const wv=ex.bar?Math.max(ex.bar,r25(ww*f)):Math.max(2.5,r25(ww*f));return `<button class="warmrow ${e.warm&&e.warm[i]?'ok':''}" data-warm="${i}"><span>${ic('check')}</span><span>گرم‌کردن ${fa(i+1)}</span><b>${fa(wv)} کیلو × ${fa(r)}</b></button>`;}).join(''):'';
+ const ww=+(e.sets.find(x=>x.w!=='')||{}).w||0;const bar=barOf(ex);const pl=ex.bar?plates(ww,bar):null;
+ const warm=!bw&&ww>=bar+10?[[0.5,8],[0.75,4]].map(([f,r],i)=>{const wv=ex.bar?Math.max(bar,r25(ww*f)):Math.max(2.5,r25(ww*f));return `<button class="warmrow ${e.warm&&e.warm[i]?'ok':''}" data-warm="${i}"><span>${ic('check')}</span><span>گرم‌کردن ${fa(i+1)}</span><b>${ex.bar?wtxt(e.id,wv):fa(wv)+' کیلو'} × ${fa(r)}</b></button>`;}).join(''):'';
  return `<div class="view">
  <div class="row"><span class="muted grow">جلسهٔ ${wlab(lv.w)}${lv.short?' کوتاه':''} · ${fa(min)} دقیقه · حرکت ${fa(lv.i+1)} از ${fa(lv.ex.length)}${vol?` · ${fa(Math.round(vol))} کیلو`:''}</span><button class="btn small ghost danger" id="l-abort">انصراف</button></div>
  <div class="progress"><i style="width:${total?done/total*100:0}%"></i></div>
@@ -884,11 +891,11 @@ function viewLive(){const lv=S.live,e=lv.ex[lv.i],ex=EX[e.id],done=lv.ex.reduce(
  <details style="margin-top:8px"><summary>${ic('info')}نکات فرم</summary><ul class="tips">${ex.cues.map(c=>`<li>${c}</li>`).join('')}</ul><p class="muted" style="margin:6px 0 0">اشتباه رایج: ${ex.mist.join('؛ ')}</p></details>
  ${pw.deload?`<p class="alert" style="margin:8px 0 0;border-color:var(--swim)">${ic('bed')}هفتهٔ ${fa(pw.n)}، هفتهٔ سبک: ${bw?'تکرارها ۲۰٪ کمتر':'وزنه‌ها ۱۰٪ کمتر'}، فرم را صیقل بده.</p>`:''}
  ${warm?`<div class="warm">${warm}</div>`:''}
- ${pl?`<p class="muted" style="margin:8px 0 0">${ic('dumbbell')}برای ${fa(ww)} کیلو، هر طرف هالتر ${fa(ex.bar)}: <b>${pl.out.length?pl.out.map(fa).join(' + '):'بدون صفحه'}</b>${pl.rest>0.01?` (${fa(pl.rest)} کیلو گرد شد)`:''}</p>`:''}
- ${best?`<p class="muted" style="margin:6px 0 0">${ic('flame')}بهترین وزنهٔ قبلی: ${fa(best)} کیلو</p>`:''}
- <div class="hdr" style="margin-top:10px"><span>ست</span><span>${bw?'—':'وزنه'}</span><span>${ex.unit||'تکرار'}</span><span></span></div>
- <div class="sets">${e.sets.map((s,i)=>{const stepW=ex.bar?2.5:(ex.inc||2.5);const rv=s.r===''||s.r===null?'':s.r;const rph=(lastSets(e.id)||{sets:[]}).sets[i]?.r||ex.start||ex.range[1];return `<div class="setrow ${s.done?'ok':''}"><span class="n">${fa(i+1)}${s.done&&s.w&&+s.w>best&&best>0?'<i class="pr">PR</i>':''}</span>
- ${bw?'<span class="stp dis">—</span>':`<span class="stp"><button data-stp="w" data-set="${i}" data-d="-${stepW}" aria-label="کمتر">−</button><input type="number" step="0.5" inputmode="decimal" data-set="${i}" data-f="w" value="${s.w}" placeholder="۰"><button data-stp="w" data-set="${i}" data-d="${stepW}" aria-label="بیشتر">+</button></span>`}
+ ${ex.bar?`<p class="muted" style="margin:8px 0 0">${ic('dumbbell')}میلهٔ خالی ${fa(bar)} کیلو${pl?`؛ برای ${fa(ww)} کیلو هر طرف: <b>${pl.out.length?pl.out.map(fa).join(' + '):'بدون صفحه'}</b>${pl.rest>0.01?` (${fa(pl.rest)} کیلو گرد شد)`:''}`:'؛ عدد هر طرف را وارد کن، مجموع خودش حساب می‌شود'}</p>`:''}
+ ${best?`<p class="muted" style="margin:6px 0 0">${ic('flame')}بهترین وزنهٔ قبلی: ${wtxt(e.id,best)}</p>`:''}
+ <div class="hdr" style="margin-top:10px"><span>ست</span><span>${bw?'—':(ex.bar?'هر طرف':'وزنه')}</span><span>${ex.unit||'تکرار'}</span><span></span></div>
+ <div class="sets">${e.sets.map((s,i)=>{const stepW=ex.bar?(ex.inc||5)/2:(ex.inc||2.5);const wf=ex.bar?'side':'w';const wv=ex.bar?sideOf(ex,s.w):s.w;const rv=s.r===''||s.r===null?'':s.r;const rph=(lastSets(e.id)||{sets:[]}).sets[i]?.r||ex.start||ex.range[1];return `<div class="setrow ${s.done?'ok':''}"><span class="n">${fa(i+1)}${s.done&&s.w&&+s.w>best&&best>0?'<i class="pr">PR</i>':''}</span>
+ ${bw?'<span class="stp dis">—</span>':`<span class="stp${ex.bar?' side':''}"><button data-stp="${wf}" data-set="${i}" data-d="-${stepW}" aria-label="کمتر">−</button><input type="number" step="0.5" inputmode="decimal" data-set="${i}" data-f="${wf}" value="${wv}" placeholder="۰">${ex.bar&&s.w!==''?`<i class="tot">=${fa(s.w)}</i>`:''}<button data-stp="${wf}" data-set="${i}" data-d="${stepW}" aria-label="بیشتر">+</button></span>`}
  <span class="stp"><button data-stp="r" data-set="${i}" data-d="-1" aria-label="کمتر">−</button><input type="number" inputmode="numeric" data-set="${i}" data-f="r" value="${rv}" placeholder="${rph}"><button data-stp="r" data-set="${i}" data-d="1" aria-label="بیشتر">+</button></span>
  <button class="btn done ${s.done?'':'primary'}" data-done="${i}">${s.done?'✓':'ثبت'}</button>
  ${s.done&&ex.rest>0?`<div class="rir"><span class="muted">در توان:</span>${[0,1,2,3].map(n=>`<button class="${s.rir===n?'on':''}" data-rir="${n}" data-set="${i}">${n===3?'۳+':fa(n)}</button>`).join('')}</div>`:''}</div>`;}).join('')}</div>
@@ -897,13 +904,13 @@ function viewLive(){const lv=S.live,e=lv.ex[lv.i],ex=EX[e.id],done=lv.ex.reduce(
  <div class="row"><button class="btn grow" id="l-prev" ${lv.i===0?'disabled':''}>قبلی</button>${lv.i<lv.ex.length-1?`<button class="btn primary grow" id="l-next">حرکت بعدی</button>`:`<button class="btn primary grow" id="l-finish">${ic('check')}پایان جلسه</button>`}</div>
  <div class="card"><label class="f">یادداشت جلسه (اختیاری)<textarea id="l-note" style="min-height:60px">${lv.note||''}</textarea></label></div>
  </div>`;}
-function liveInput(ev){const lv=S.live,e=lv.ex[lv.i];{const t=ev.target;if(t.dataset.set!==undefined){const v=t.dataset.f==='rir'?(t.value===''?null:+t.value):t.value;const i=+t.dataset.set;e.sets[i][t.dataset.f]=v;if(t.dataset.f==='w'&&i===0){e.sets.forEach((x,k)=>{if(k>0&&!x.done)x.w=v;});}save();}if(t.id==='l-note'){lv.note=t.value;save();}}}
+function liveInput(ev){const lv=S.live,e=lv.ex[lv.i];{const t=ev.target;if(t.dataset.set!==undefined){let f=t.dataset.f,v=f==='rir'?(t.value===''?null:+t.value):t.value;const i=+t.dataset.set;if(f==='side'){f='w';v=totalOf(EX[e.id],t.value);}e.sets[i][f]=v;if(f==='w'&&i===0){e.sets.forEach((x,k)=>{if(k>0&&!x.done)x.w=v;});}save();if(t.dataset.f==='side'){const tot=t.parentElement.querySelector('.tot');if(tot)tot.textContent=v===''?'':'='+fa(v);}}if(t.id==='l-note'){lv.note=t.value;save();}}}
 function liveClick(ev){const m=$('#main'),lv=S.live,e=lv.ex[lv.i];{const b=ev.target.closest('button');if(!b)return;
   if(b.dataset.done!==undefined){const i=+b.dataset.done,s=e.sets[i];if(s.done){s.done=false;save();render();return;}
    if(s.r===''||s.r===null){const ph=(lastSets(e.id)||{sets:[]}).sets[i]?.r||EX[e.id].start||EX[e.id].range[1];s.r=ph;}
    if((s.w===''||s.w===null)&&!(PROG.bodyweight.has(e.id)||e.id==='bike')){const inp=m.querySelector(`input[data-set="${i}"][data-f="w"]`);if(inp)inp.focus();toast('وزنه را وارد کن (با + و − یا تایپ)');return;}
-   s.done=true;const prevBest=bestBefore(e.id);save();render();if(prevBest&&+s.w>prevBest)toast(`رکورد جدید! ${fa(s.w)} کیلو، بیشتر از ${fa(prevBest)} 🏆`);const rest=Math.round(EX[e.id].rest*S.settings.restScale);const lastSet=e.sets.every(x=>x.done);if(rest>0)restTimer(rest,lastSet);}
-  if(b.dataset.stp){const i=+b.dataset.set,f=b.dataset.stp,d=+b.dataset.d,st=e.sets[i];let cur=st[f]===''||st[f]===null||st[f]===undefined?null:+st[f];if(cur===null){cur=f==='r'?(+((lastSets(e.id)||{sets:[]}).sets[i]||{}).r||EX[e.id].start||EX[e.id].range[1]):0;}let nv=Math.max(0,Math.round((cur+d)*4)/4);if(f==='r')nv=Math.max(0,Math.round(nv));st[f]=nv;if(f==='w'&&i===0){e.sets.forEach((x,k)=>{if(k>0&&!x.done)x.w=nv;});}save();render();return;}
+   s.done=true;const prevBest=bestBefore(e.id);save();render();if(prevBest&&+s.w>prevBest)toast(`رکورد جدید! ${wtxt(e.id,s.w)}، بیشتر از ${fa(prevBest)} 🏆`);const rest=Math.round(EX[e.id].rest*S.settings.restScale);const lastSet=e.sets.every(x=>x.done);if(rest>0)restTimer(rest,lastSet);}
+  if(b.dataset.stp){const i=+b.dataset.set,d=+b.dataset.d,st=e.sets[i];let f=b.dataset.stp;const side=f==='side';if(side)f='w';let cur=st[f]===''||st[f]===null||st[f]===undefined?null:+st[f];if(cur===null){cur=f==='r'?(+((lastSets(e.id)||{sets:[]}).sets[i]||{}).r||EX[e.id].start||EX[e.id].range[1]):0;}if(side)cur=+sideOf(EX[e.id],cur)||0;let nv=Math.max(0,Math.round((cur+d)*4)/4);if(f==='r')nv=Math.max(0,Math.round(nv));if(side)nv=totalOf(EX[e.id],nv);st[f]=nv;if(f==='w'&&i===0){e.sets.forEach((x,k)=>{if(k>0&&!x.done)x.w=nv;});}save();render();return;}
   if(b.dataset.rir){const i=+b.dataset.set,n=+b.dataset.rir,st=e.sets[i];st.rir=st.rir===n?null:n;save();render();return;}
   if(b.dataset.wu!==undefined){lv.wu=lv.wu||[false,false,false,false];lv.wu[+b.dataset.wu]=!lv.wu[+b.dataset.wu];save();render();return;}
   if(b.id==='l-hold'){holdTimer(+b.dataset.sec);return;}
@@ -965,7 +972,7 @@ function tabClick(ev){const m=$('#main');{const b=ev.target.closest('button');if
   if(b.id==='b-import'){try{const d=JSON.parse($('#b-text').value);if(!d.sessions||!d.measures)throw 0;S=Object.assign({},DEFAULT,d);S.tests=S.tests||[];applyMode();save();render();toast('بازگردانی شد');}catch(e){toast('متن پشتیبان معتبر نیست');}}
   if(b.id==='s-reset'){confirmBox('همهٔ جلسه‌ها و اندازه‌ها پاک شود؟',()=>{S=JSON.parse(JSON.stringify(DEFAULT));applyMode();save();render();});}
  }}
-function tabChange(ev){{const t=ev.target;if(t.id==='fx-month'){foodMonth=t.value;render();return;}if(t.id==='p-h'){S.profile.height=+t.value||null;save();render();}if(t.id==='p-age'){S.profile.age=+t.value||null;save();}if(t.id==='s-sound'){S.settings.sound=t.checked;save();}if(t.id==='s-wake'){S.settings.wake=t.checked;save();}if(t.id==='s-home'){S.settings.home=t.checked;save();render();}if(t.id==='s-rest'){S.settings.restScale=+t.value;save();}}}
+function tabChange(ev){{const t=ev.target;if(t.id==='fx-month'){foodMonth=t.value;render();return;}if(t.id==='p-h'){S.profile.height=+t.value||null;save();render();}if(t.id==='p-age'){S.profile.age=+t.value||null;save();}if(t.id==='s-sound'){S.settings.sound=t.checked;save();}if(t.id==='s-wake'){S.settings.wake=t.checked;save();}if(t.id==='s-rest'){S.settings.restScale=+t.value;save();}if(t.id==='s-bar'){S.settings.barW=+t.value||20;save();}if(t.id==='s-ezbar'){S.settings.ezBar=+t.value||10;save();}}}
 $('#main').addEventListener('click',ev=>S.live?liveClick(ev):tabClick(ev));
 $('#main').addEventListener('input',ev=>{if(S.live)liveInput(ev);});
 $('#main').addEventListener('change',ev=>{if(!S.live)tabChange(ev);else liveInput(ev);});
