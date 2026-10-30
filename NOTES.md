@@ -29,6 +29,19 @@ Single-file offline PWA (`index.html`, ~430 KB, fonts embedded) for one person's
 - Short version: first 3 exercises, 2 sets, no finisher.
 - Leg volume was reduced (lunge 3→2, goblet squat removed, bike interval removed) because of the uphill ride home. Squat/RDL/hip thrust kept.
 
+## Training modes (v16)
+`settings.mode` = `gym` (default, the A/B/C program above) or `cali` (military-style calisthenics). Segment control in Settings → «برنامهٔ تمرینی». `MODES` holds per-mode `W`, `FIN`, `WARM`, labels, week text; `applyMode()` copies the active set into the globals `W`/`FIN`/`WARM` (called from `load()`, on switch, after restore/reset). `nextWorkout()` cycles only over sessions of the active mode (`session.mode`, missing = gym). History, nutrition, measures and activities are shared.
+
+Calisthenics program (intermediate), keys '1'/'2'/'3', rest 45–60 s:
+- **1 بالاتنه و تست‌محور**: push-up 4×12–20, pull-up 4×5–10, bench dips 3×8–15, air squat 3×20–30, plank 3×30–45 s. Finisher: hanging knee raise 2×, dead hang 2×.
+- **2 پا و استقامت**: jump squat 3×10–15, walking lunge 3×12–16/leg, burpee 4×8–12, mountain climber 3×30–40 s, run intervals 1×8 rounds (20 s hard / 40 s easy). Finisher: sit-up 2×, side plank 2×.
+- **3 کل بدن، مداری**: pike push-up 3×8–12, chin-up 4×6–10, diamond push-up 3×8–12, glute bridge 3×15–20, hollow hold 3×20–30 s, superman 3×12–15. Finisher: hanging leg raise 2×, crunch 2×.
+- Warm-up checklist: jumping jacks/rope 60 s, arm + hip circles, 10 slow squats + 5 lunges/leg, 30 s high knees + 5 easy push-ups.
+- New `EX` entries are tagged `c:1`; `CALI` = those ids, `SHARED` = bodyweight ids used by both programs; `libIds()` filters the library by mode; `altOf(id)` uses `altc` (calisthenics alternate) when present (dead hang → plank, chin-up negative → dead hang).
+- Progression: all bodyweight ids are in `PROG.bodyweight` (reps/seconds, `inc`); deload weeks give 20% fewer reps (not below range bottom). RIR chips hidden only for `rest:0` items (bike, run).
+- Poses added for all new exercises (`POSES`, `CAPS`); new prop `box` (bench for dips); `CYC` set lists cyclic animations (bike, farmer, mountain climber, run).
+- Fitness test card on Today (cali mode only), due every 28 days: push-ups/2 min, sit-ups/2 min, max pull-ups, 3.2 km run (mm:ss, Persian digits accepted, stored in seconds). `S.tests[]` ({date,pu,su,pull,run}); deltas vs first test; approximate old APFT male standards (min/max) by age bracket from `profile.age` in `ptStd()`. History shows a test log and a "rep progress" card for bodyweight exercises.
+
 ## Progression rules (in `suggest()`)
 - Each exercise has a rep range. All sets at top of range → add `inc` kg (2.5 DB / 5 barbell & machines). Two sets below bottom → subtract.
 - RIR ("در توان", 0/1/2/3+) per set: all 3+ → add weight even if reps not at top; two sets at 0 and reps low → reduce.
@@ -53,7 +66,7 @@ Targets: 0.4–0.6 kg/week; weigh weekly (same day, fasted), waist/abdomen every
 
 ## App structure (index.html)
 - CSS tokens at top; dark-first, light via `data-theme`; fonts Vazirmatn (default), Sahel, Shabnam embedded as base64 @font-face; switch in Settings. Theme setting dark/light/system.
-- State `S`: `profile{height,age}`, `settings{sound,wake,restScale,font,theme}`, `measures[]`, `sessions[]` (each: date, w, short, min, vol, ex[{id,rating,sets[{w,r,rir,done}]}], note), `activities[]` ({date,type: swim|tennis|ride|rest}), `nutrition{date:{itemKey:true|false|null, migraine, hungry, cheat, log[{t,txt}]}}`, `live` (in-progress workout, survives reload).
+- State `S`: `profile{height,age}`, `settings{sound,wake,restScale,font,theme,mode}`, `tests[]`, `measures[]`, `sessions[]` (each: date, w, short, min, vol, ex[{id,rating,sets[{w,r,rir,done}]}], note), `activities[]` ({date,type: swim|tennis|ride|rest}), `nutrition{date:{itemKey:true|false|null, migraine, hungry, cheat, log[{t,txt}]}}`, `live` (in-progress workout, survives reload).
 - Tabs: today, lib (exercise library + detail), food, body (measures + chart), hist (calendar, muscle sets/week, PRs + e1RM, nutrition adherence, food log review, sessions), set.
 - Animation: `POSES[id]=[poseA,poseB]`, forward-kinematics stick→human renderer (`fk`, `drawPose`), `CAPS` captions per phase. Props: bar, db, kb, barhip, cable, cableup, barup, bike; benches 1/2/3.
 - Live workout: stepper rows (−/+ weight and reps, prefilled from suggestion/last session, weight copies down from set 1), RIR chips after a set is logged, PR toast and badge, rest timer (ring + beep + ±15 s), hold timer for timed exercises, warm-up checklist on first exercise, "machine busy" swap to `alt`, per-exercise satisfaction rating 1–5.
@@ -61,7 +74,7 @@ Targets: 0.4–0.6 kg/week; weigh weekly (same day, fasted), waist/abdomen every
 - Service worker: cache-first with background refresh.
 
 ## Version log
-v1 stick figures · v2 human figures, Vazirmatn, icons, ratings, bike commute · v3 plate calc, warm-ups, PR/volume, RIR, muscle sets, deload · v4 font switcher · v5 theme · v6 stepper set rows · v7 nutrition tab · v8 tri-state checklist, flags, adherence history · v9 food log · v10 keep scroll · v11 no double-tap zoom, hold timer, finishers, warm-up in session, Today reorder · v12 no input zoom, measurement reminder, weight-only entries · v13 tap-to-log food with household units + monthly CSV export, Liquid Glass restyle · v14 edit any day's food from the calendar / week strip · v15 custom foods become reusable items, tab bar flush to bottom edge.
+v1 stick figures · v2 human figures, Vazirmatn, icons, ratings, bike commute · v3 plate calc, warm-ups, PR/volume, RIR, muscle sets, deload · v4 font switcher · v5 theme · v6 stepper set rows · v7 nutrition tab · v8 tri-state checklist, flags, adherence history · v9 food log · v10 keep scroll · v11 no double-tap zoom, hold timer, finishers, warm-up in session, Today reorder · v12 no input zoom, measurement reminder, weight-only entries · v13 tap-to-log food with household units + monthly CSV export, Liquid Glass restyle · v14 edit any day's food from the calendar / week strip · v15 custom foods become reusable items, tab bar flush to bottom edge · v16 switchable military-calisthenics program + 4-week fitness test.
 
 ## Ideas not done (deliberately)
 Calendar reminders (.ics), progress photos, Apple Watch, social features, 12-week block periodization beyond deload weeks, Peyda font (couldn't fetch).
