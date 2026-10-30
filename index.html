@@ -27,7 +27,7 @@
   --line:rgba(255,255,255,.12); --hl:rgba(255,255,255,.22); --shadow:rgba(0,0,0,.45); --solid:#161a22;
   --fg:#f2f4f8; --muted:#9aa4b2; --accent:#f2b544; --accent-fg:#1a1200;
   --good:#5fd38a; --warn:#f2b544; --bad:#f06d6d; --swim:#5bb8f5;
-  --skin:#e6b48c; --skin2:#b98860; --shirt:#4f86d8; --shorts:#2b303b; --shoe:#15171b; --hair:#2a1d14; --iron:#8b939e;
+  --skin:#e9b991; --skin2:#c9966a; --shirt:#3f7fe0; --shirt2:#2f66bd; --shorts:#262b36; --shoe:#111318; --hair:#2a1d14; --iron:#7d8794; --iron2:#4b535e; --ink:#1c1f26; --figbg:#f4f5f8; --figbg2:#dfe2e9; --figline:#c3c8d2; --figshadow:rgba(20,25,40,.18);
   --font:"Vazirmatn",-apple-system,"SF Arabic","Segoe UI",Tahoma,sans-serif;
   --blur:blur(28px) saturate(170%);
   color-scheme:dark;
@@ -116,18 +116,20 @@ label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--mu
 .exlist{display:flex;flex-direction:column;gap:8px}
 .exitem{display:flex;gap:12px;align-items:center;background:var(--surface2);border:1px solid var(--line);border-radius:18px;padding:10px;width:100%;text-align:right;box-shadow:inset 0 1px 0 var(--hl)}
 .exitem:active{transform:scale(.985)}
-.exitem .thumb{width:56px;height:56px;flex:none;background:var(--well);border-radius:14px}
+.exitem .thumb{width:60px;height:60px;flex:none;background:linear-gradient(180deg,var(--figbg),var(--figbg2));border-radius:14px;overflow:hidden}
 .exitem .thumb svg{width:100%;height:100%}
-.anim{background:var(--well);border:1px solid var(--line);border-radius:18px;width:100%;aspect-ratio:1.3;max-width:100%;display:block;overflow:hidden}
+.anim{position:relative;background:radial-gradient(120% 90% at 50% 0%,var(--figbg) 0%,var(--figbg2) 100%);border:1px solid var(--line);border-radius:18px;width:100%;aspect-ratio:1.12;max-width:100%;display:block;overflow:hidden;box-shadow:inset 0 1px 0 rgba(255,255,255,.9)}
 .anim svg{width:100%;height:100%;display:block}
+.figcap{position:absolute;left:10px;right:10px;bottom:10px;text-align:center;font-size:12.5px;font-weight:600;color:#1b1f26;background:rgba(255,255,255,.82);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid rgba(20,30,50,.08);border-radius:999px;padding:6px 12px;pointer-events:none;min-height:18px;transition:opacity .25s}
+.figcap:empty{opacity:0}
+.figph{position:absolute;top:10px;right:10px;display:flex;gap:4px;pointer-events:none}.figph i{width:14px;height:4px;border-radius:2px;background:rgba(20,30,50,.18)}.figph i.on{background:var(--accent)}
 .fig{stroke:var(--fg);stroke-width:4;stroke-linecap:round;stroke-linejoin:round;fill:none}
 .fig.back{stroke:var(--muted);opacity:.55}
 .head{fill:var(--fg)}
 .prop{stroke:var(--accent);stroke-width:4;stroke-linecap:round;fill:none}
 .propfill{fill:var(--accent)}
 .bench{fill:var(--line)}
-.floor{stroke:var(--line);stroke-width:2}
-.cap{fill:var(--fg);font-size:8.5px;font-family:var(--font);direction:rtl}
+.floor{stroke:var(--figline);stroke-width:1.5}
 ul.tips{margin:6px 0 0;padding-right:18px;font-size:14px}
 ul.tips li{margin-bottom:3px}
 .sets{display:flex;flex-direction:column;gap:6px;margin-top:8px}
@@ -484,55 +486,73 @@ const CAPS={
  situp:['پایین: زانو خم، دست روی سینه','بالا: نشستن کامل، بازدم'],
 };
 function figSVG(id){return `<svg viewBox="0 0 200 184" data-ex="${id}" aria-label="${EX[id].name}">
- <line class="floor" x1="6" y1="${FLOOR}" x2="194" y2="${FLOOR}"/>
- <g class="eq"></g><g class="body"></g><g class="propf"></g>
- <text class="cap" x="100" y="178" text-anchor="middle"></text></svg>`;}
+ <ellipse class="shadow" cx="100" cy="${FLOOR+1}" rx="40" ry="4" fill="var(--figshadow)"/><line class="floor" x1="0" y1="${FLOOR}" x2="200" y2="${FLOOR}"/>
+ <g class="eq"></g><g class="body"></g><g class="propf"></g></svg>`;}
+function animBox(id){return `<div class="anim">${figSVG(id)}<div class="figph"><i></i><i></i></div><div class="figcap"></div></div>`;}
 const P=(x,y)=>x.toFixed(1)+','+y.toFixed(1);
+const INK='var(--ink)',OW=3;
 const seg=(a,b,w,c)=>`<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="${c}" stroke-width="${w}" stroke-linecap="round"/>`;
 const add=(a,v,k)=>[a[0]+v[0]*k,a[1]+v[1]*k];
-function limbs(f,leg,arm,skin,shoe){const [h,k,a]=leg,[s,e,w]=arm;const ds=[a[0]-k[0],a[1]-k[1]];const dl=Math.hypot(ds[0],ds[1])||1;const fp=[ds[1]/dl,-ds[0]/dl];
- return seg(h,k,12,skin)+seg(k,a,10,skin)+seg(add(a,fp,-2),add(a,fp,11),7,shoe)+seg(s,e,8,skin)+seg(e,w,7,skin)+`<circle cx="${w[0].toFixed(1)}" cy="${w[1].toFixed(1)}" r="4.2" fill="${skin}"/>`;}
+/* outlined capsule chain: ink silhouette first, then fills, so overlapping limbs stay separable */
+function chainSeg(parts){let o='',f='';for(const [a,b,w] of parts){o+=seg(a,b,w+OW,INK);}for(const [a,b,w,c] of parts){f+=seg(a,b,w,c);}return o+f;}
+function limbLeg(leg,skin,shoe){const [h,k,a]=leg;const ds=[a[0]-k[0],a[1]-k[1]];const dl=Math.hypot(ds[0],ds[1])||1;const fp=[ds[1]/dl,-ds[0]/dl];
+ return chainSeg([[h,k,13,skin],[k,a,10.5,skin],[add(a,fp,-2),add(a,fp,12),7.5,shoe]]);}
+function limbArm(arm,skin){const [s,e,w]=arm;return chainSeg([[s,e,9,skin],[e,w,7.5,skin]])+`<circle cx="${w[0].toFixed(1)}" cy="${w[1].toFixed(1)}" r="4.6" fill="${skin}" stroke="${INK}" stroke-width="1.5"/>`;}
 function drawPose(svg,p){const f=fk(p),H=f.hip,S=f.sho,n=f.n,u=f.u;
- const skin='var(--skin)',skin2='var(--skin2)',shirt='var(--shirt)',shorts='var(--shorts)',shoe='var(--shoe)',iron='var(--iron)',wood='var(--line)';
+ const skin='var(--skin)',skin2='var(--skin2)',shirt='var(--shirt)',shirt2='var(--shirt2)',shorts='var(--shorts)',shoe='var(--shoe)',iron='var(--iron)',iron2='var(--iron2)';
  const hand=f.arm1[2],hand2=f.arm2[2],dt=[f.leg1[1][0]-H[0],f.leg1[1][1]-H[1]];const dtl=Math.hypot(dt[0],dt[1])||1;const td=[dt[0]/dtl,dt[1]/dtl];
  let eq='',body='',pf='';
- const rect=(x,y,w,h,c,rx=2)=>`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w}" height="${h}" rx="${rx}" fill="${c}"/>`;
- if(p.bench===1)eq=rect(H[0]-72,H[1]+4,82,8,wood)+rect(H[0]-62,H[1]+12,6,FLOOR-H[1]-12,wood)+rect(H[0]-6,H[1]+12,6,FLOOR-H[1]-12,wood);
- if(p.bench===2)eq=rect(S[0]-50,S[1]+2,56,8,wood)+rect(S[0]-40,S[1]+10,6,FLOOR-S[1]-10,wood)+rect(S[0]-6,S[1]+10,6,FLOOR-S[1]-10,wood);
- if(p.bench===3){eq=seg(add(H,n,-9),add(S,n,-11),9,wood)+rect(H[0]-5,H[1]+4,6,FLOOR-H[1]-4,wood)+rect(add(S,n,-11)[0]-3,add(S,n,-11)[1],6,FLOOR-add(S,n,-11)[1],wood);}
- if(p.prop==='cable'){eq=rect(180,20,10,FLOOR-20,iron,1)+rect(170,FLOOR-50,10,50,'var(--surface)',1)+rect(H[0]-10,H[1]+6,30,6,wood)+seg(hand,[180,hand[1]-3],2,iron);}
- if(p.prop==='barup'){eq=seg([hand[0]-40,hand[1]],[hand[0]+40,hand[1]],4,iron)+rect(hand[0]-44,hand[1]-2,5,FLOOR-hand[1]+2,wood)+rect(hand[0]+39,hand[1]-2,5,FLOOR-hand[1]+2,wood);}
- if(p.prop==='cableup'){eq=rect(hand[0]-4,2,8,8,iron,2)+seg(hand,[hand[0],8],2,iron)+rect(H[0]-18,H[1]+6,36,6,wood)+rect(H[0]+6,H[1]-12,22,5,wood);}
- if(p.prop==='box'){eq=rect(hand[0]-34,hand[1]-1,40,7,wood)+rect(hand[0]-32,hand[1]+6,5,FLOOR-hand[1]-6,wood)+rect(hand[0]-1,hand[1]+6,5,FLOOR-hand[1]-6,wood);}
- if(p.prop==='bike'){eq=`<circle cx="${(H[0]+42).toFixed(1)}" cy="${FLOOR-14}" r="14" fill="none" stroke="${iron}" stroke-width="4"/><circle cx="${(H[0]-26).toFixed(1)}" cy="${FLOOR-14}" r="14" fill="none" stroke="${iron}" stroke-width="4"/>`+seg([H[0]-8,H[1]+5],[H[0]+8,H[1]+5],6,iron)+seg([H[0],H[1]+5],[H[0]+4,FLOOR-14],4,iron)+seg([H[0]+4,FLOOR-14],[hand[0],hand[1]+2],4,iron)+seg([hand[0]-8,hand[1]+2],[hand[0]+8,hand[1]+2],5,iron);}
+ const rect=(x,y,w,h,c,rx=2,st='')=>`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w}" height="${h}" rx="${rx}" fill="${c}"${st?` stroke="${st}" stroke-width="1.5"`:''}/>`;
+ const wrect=(x,y,w,h,rx=2)=>rect(x,y,w,h,'#cfd4dd',rx,'#9aa2ad');
+ if(p.bench===1)eq=wrect(H[0]-72,H[1]+4,82,8)+wrect(H[0]-62,H[1]+12,6,FLOOR-H[1]-12)+wrect(H[0]-6,H[1]+12,6,FLOOR-H[1]-12);
+ if(p.bench===2)eq=wrect(S[0]-50,S[1]+2,56,8)+wrect(S[0]-40,S[1]+10,6,FLOOR-S[1]-10)+wrect(S[0]-6,S[1]+10,6,FLOOR-S[1]-10);
+ if(p.bench===3){eq=seg(add(H,n,-9),add(S,n,-11),11,'#9aa2ad')+seg(add(H,n,-9),add(S,n,-11),8,'#cfd4dd')+wrect(H[0]-5,H[1]+4,6,FLOOR-H[1]-4)+wrect(add(S,n,-11)[0]-3,add(S,n,-11)[1],6,FLOOR-add(S,n,-11)[1]);}
+ if(p.prop==='cable'){eq=rect(180,20,10,FLOOR-20,iron2,1)+rect(170,FLOOR-50,10,50,iron,1)+wrect(H[0]-10,H[1]+6,30,6)+seg(hand,[180,hand[1]-3],2,iron2);}
+ if(p.prop==='barup'){eq=rect(hand[0]-44,hand[1]-2,5,FLOOR-hand[1]+2,iron2,1)+rect(hand[0]+39,hand[1]-2,5,FLOOR-hand[1]+2,iron2,1);}
+ if(p.prop==='cableup'){eq=rect(hand[0]-4,2,8,8,iron2,2)+seg(hand,[hand[0],8],2,iron2)+wrect(H[0]-18,H[1]+6,36,6)+wrect(H[0]+6,H[1]-12,22,5);}
+ if(p.prop==='box'){eq=wrect(hand[0]-34,hand[1]-1,40,7)+wrect(hand[0]-32,hand[1]+6,5,FLOOR-hand[1]-6)+wrect(hand[0]-1,hand[1]+6,5,FLOOR-hand[1]-6);}
+ if(p.prop==='bike'){eq=`<circle cx="${(H[0]+42).toFixed(1)}" cy="${FLOOR-14}" r="14" fill="none" stroke="${iron2}" stroke-width="4"/><circle cx="${(H[0]-26).toFixed(1)}" cy="${FLOOR-14}" r="14" fill="none" stroke="${iron2}" stroke-width="4"/>`+seg([H[0]-8,H[1]+5],[H[0]+8,H[1]+5],6,iron2)+seg([H[0],H[1]+5],[H[0]+4,FLOOR-14],4,iron2)+seg([H[0]+4,FLOOR-14],[hand[0],hand[1]+2],4,iron2)+seg([hand[0]-8,hand[1]+2],[hand[0]+8,hand[1]+2],5,iron2);}
+ function db(h,op){return `<g opacity="${op}">${seg([h[0]-9,h[1]],[h[0]+9,h[1]],5,INK)}${seg([h[0]-9,h[1]],[h[0]+9,h[1]],2.5,iron)}${rect(h[0]-13,h[1]-6.5,6,13,iron2,1.5,INK)}${rect(h[0]+7,h[1]-6.5,6,13,iron2,1.5,INK)}</g>`;}
  /* back limbs */
- body+=limbs(f,f.leg2,f.arm2,skin2,shoe);
- if(p.prop==='db')body+=db(hand2,0.5);
- /* shorts + torso */
- body+=`<polygon points="${P(...add(H,n,10))} ${P(...add(H,n,-10))} ${P(...add(add(H,n,-8),td,15))} ${P(...add(add(H,n,8),td,15))}" fill="${shorts}"/>`;
- body+=`<polygon points="${P(...add(H,n,9))} ${P(...add(S,n,11))} ${P(...add(S,n,-13))} ${P(...add(H,n,-10))}" fill="${shirt}"/>`;
- body+=seg(S,add(S,u,6),7,skin);
+ body+=limbLeg(f.leg2,skin2,shoe)+limbArm(f.arm2,skin2);
+ if(p.prop==='db')body+=db(hand2,0.75);
+ /* shorts + torso, outlined */
+ const sh=[add(H,n,10.5),add(H,n,-10.5),add(add(H,n,-8.5),td,16),add(add(H,n,8.5),td,16)];
+ const tr=[add(H,n,9.5),add(S,n,11.5),add(S,n,-13.5),add(H,n,-10.5)];
+ body+=`<polygon points="${sh.map(q=>P(...q)).join(' ')}" fill="${shorts}" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>`;
+ body+=`<polygon points="${tr.map(q=>P(...q)).join(' ')}" fill="${shirt}" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>`;
+ body+=`<polygon points="${P(...add(H,n,-1))} ${P(...add(S,n,-1))} ${P(...add(S,n,-12.5))} ${P(...add(H,n,-9.5))}" fill="${shirt2}" opacity=".55"/>`;
+ /* neck */
+ body+=seg(add(S,u,-2),add(S,u,7),9,INK)+seg(add(S,u,-2),add(S,u,7),6,skin);
  /* front limbs */
- body+=limbs(f,f.leg1,f.arm1,skin,shoe);
+ body+=limbLeg(f.leg1,skin,shoe)+limbArm(f.arm1,skin);
  /* head */
- const hd=f.head;body+=`<circle cx="${hd[0].toFixed(1)}" cy="${hd[1].toFixed(1)}" r="${L.head}" fill="${skin}"/>`;
- const hc=add(hd,u,3);body+=`<path d="M ${P(...add(hc,n,-9))} A 9 9 0 0 1 ${P(...add(hc,n,9))} Z" fill="var(--hair)" transform="rotate(${(p.t).toFixed(1)} ${hc[0].toFixed(1)} ${hc[1].toFixed(1)})"/>`;
- const eye=add(add(hd,n,6),u,1);body+=`<circle cx="${eye[0].toFixed(1)}" cy="${eye[1].toFixed(1)}" r="1.3" fill="var(--hair)"/>`;
- /* props */
- function db(h,op){return `<g opacity="${op}">${seg([h[0]-9,h[1]],[h[0]+9,h[1]],3,iron)}${rect(h[0]-12,h[1]-6,5,12,iron,1.5)}${rect(h[0]+7,h[1]-6,5,12,iron,1.5)}</g>`;}
- if(p.prop==='bar'){pf=seg([hand[0]-34,hand[1]],[hand[0]+34,hand[1]],3,iron)+rect(hand[0]-40,hand[1]-13,6,26,iron,1.5)+rect(hand[0]+34,hand[1]-13,6,26,iron,1.5);}
+ const hd=f.head;body+=`<circle cx="${hd[0].toFixed(1)}" cy="${hd[1].toFixed(1)}" r="${L.head+0.5}" fill="${skin}" stroke="${INK}" stroke-width="1.8"/>`;
+ const hc=add(hd,u,3);body+=`<path d="M ${P(...add(hc,n,-9.4))} A 9.4 9.4 0 0 1 ${P(...add(hc,n,9.4))} Z" fill="var(--hair)" transform="rotate(${(p.t).toFixed(1)} ${hc[0].toFixed(1)} ${hc[1].toFixed(1)})"/>`;
+ const eye=add(add(hd,n,5.5),u,1);body+=`<circle cx="${eye[0].toFixed(1)}" cy="${eye[1].toFixed(1)}" r="1.3" fill="${INK}"/>`;
+ /* props in front */
+ if(p.prop==='bar'){pf=seg([hand[0]-36,hand[1]],[hand[0]+36,hand[1]],5,INK)+seg([hand[0]-36,hand[1]],[hand[0]+36,hand[1]],2.5,iron)+rect(hand[0]-42,hand[1]-14,7,28,iron2,2,INK)+rect(hand[0]+35,hand[1]-14,7,28,iron2,2,INK);}
  if(p.prop==='db')pf=db(hand,1);
- if(p.prop==='kb')pf=`<circle cx="${hand[0].toFixed(1)}" cy="${(hand[1]+8).toFixed(1)}" r="8" fill="${iron}"/><path d="M ${P(hand[0]-5,hand[1]+2)} A 5 5 0 0 1 ${P(hand[0]+5,hand[1]+2)}" fill="none" stroke="${iron}" stroke-width="3"/>`;
- if(p.prop==='barhip')pf=`<circle cx="${H[0].toFixed(1)}" cy="${(H[1]-10).toFixed(1)}" r="12" fill="${iron}"/><circle cx="${H[0].toFixed(1)}" cy="${(H[1]-10).toFixed(1)}" r="3" fill="var(--surface2)"/>`;
- if(p.prop==='cable')pf=seg([hand[0]-3,hand[1]-6],[hand[0]-3,hand[1]+6],4,iron);
- if(p.prop==='cableup')pf=seg([hand[0]-26,hand[1]],[hand[0]+26,hand[1]],3,iron);
- svg.querySelector('.eq').innerHTML=eq;svg.querySelector('.body').innerHTML=body;svg.querySelector('.propf').innerHTML=pf;}
+ if(p.prop==='kb')pf=`<circle cx="${hand[0].toFixed(1)}" cy="${(hand[1]+8).toFixed(1)}" r="8" fill="${iron2}" stroke="${INK}" stroke-width="1.5"/><path d="M ${P(hand[0]-5,hand[1]+2)} A 5 5 0 0 1 ${P(hand[0]+5,hand[1]+2)}" fill="none" stroke="${INK}" stroke-width="3"/>`;
+ if(p.prop==='barhip')pf=`<circle cx="${H[0].toFixed(1)}" cy="${(H[1]-10).toFixed(1)}" r="12" fill="${iron2}" stroke="${INK}" stroke-width="1.5"/><circle cx="${H[0].toFixed(1)}" cy="${(H[1]-10).toFixed(1)}" r="3" fill="${iron}"/>`;
+ if(p.prop==='barup')pf=seg([hand[0]-40,hand[1]],[hand[0]+40,hand[1]],6,INK)+seg([hand[0]-40,hand[1]],[hand[0]+40,hand[1]],3,iron);
+ if(p.prop==='cable')pf=seg([hand[0]-3,hand[1]-6],[hand[0]-3,hand[1]+6],6,INK)+seg([hand[0]-3,hand[1]-6],[hand[0]-3,hand[1]+6],3,iron);
+ if(p.prop==='cableup')pf=seg([hand[0]-26,hand[1]],[hand[0]+26,hand[1]],5,INK)+seg([hand[0]-26,hand[1]],[hand[0]+26,hand[1]],2.5,iron);
+ svg.querySelector('.eq').innerHTML=eq;svg.querySelector('.body').innerHTML=body;svg.querySelector('.propf').innerHTML=pf;
+ const shd=svg.querySelector('.shadow');if(shd){const cx=(H[0]+hd[0])/2;shd.setAttribute('cx',cx.toFixed(1));shd.setAttribute('rx',Math.max(26,Math.abs(H[0]-hd[0])/2+22).toFixed(1));}}
+/* frame each exercise to its own motion envelope so the figure fills the panel */
+function fitView(svg){const id=svg.dataset.ex,[a,b]=POSES[id];let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+ for(const k of [0,.5,1]){drawPose(svg,lerpPose(a,b,k));for(const c of ['.eq','.body','.propf']){const g=svg.querySelector(c);if(!g.firstChild)continue;const r=g.getBBox();if(!r.width&&!r.height)continue;x0=Math.min(x0,r.x);y0=Math.min(y0,r.y);x1=Math.max(x1,r.x+r.width);y1=Math.max(y1,r.y+r.height);}}
+ if(x0>x1||!isFinite(x0))return;y1=Math.max(y1,FLOOR+3);const thumb=!svg.closest('.anim');const pad=thumb?6:10,capPad=thumb?0:36;
+ let w=x1-x0+pad*2,h=y1-y0+pad*2+capPad;const ar=thumb?1:1.12;if(w/h<ar)w=h*ar;else h=w/ar;
+ const cx=(x0+x1)/2,vx=cx-w/2,vy=y0-pad;svg.setAttribute('viewBox',`${vx.toFixed(1)} ${vy.toFixed(1)} ${w.toFixed(1)} ${h.toFixed(1)}`);
+ const fl=svg.querySelector('.floor');fl.setAttribute('x1',(vx-5).toFixed(1));fl.setAttribute('x2',(vx+w+5).toFixed(1));svg.dataset.fit='1';}
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 function animateAll(){const svgs=document.querySelectorAll('svg[data-ex]');if(!svgs.length)return;const t=performance.now()/1000;
- svgs.forEach(s=>{const id=s.dataset.ex,[a,b]=POSES[id],cyc=CYC.has(id);const per=cyc?1.2:3.2;const raw=(t%per)/per;let k,ph;
-  if(cyc){k=raw;ph=Math.floor(t/3)%2;}else{const tri=raw<.5?raw*2:2-raw*2;k=Math.min(1,Math.max(0,(tri-.12)/.76));k=k*k*(3-2*k);ph=raw<.5?0:1;if(raw>.44&&raw<.56)ph=raw<.5?1:1;}
+ svgs.forEach(s=>{const id=s.dataset.ex,[a,b]=POSES[id],cyc=CYC.has(id);if(!s.dataset.fit)fitView(s);const per=cyc?1.2:3.2;const raw=(t%per)/per;let k,ph;
+  if(cyc){k=raw;ph=Math.floor(t/3)%2;}else{const tri=raw<.5?raw*2:2-raw*2;k=Math.min(1,Math.max(0,(tri-.12)/.76));k=k*k*(3-2*k);ph=raw<.5?0:1;}
   if(reduced){k=0.5;ph=0;}
-  drawPose(s,lerpPose(a,b,k));const cap=s.querySelector('.cap');const txt=CAPS[id]?CAPS[id][ph]:'';if(cap.textContent!==txt)cap.textContent=txt;});}
+  drawPose(s,lerpPose(a,b,k));const box=s.parentElement;if(box&&box.classList.contains('anim')){const cap=box.querySelector('.figcap');const txt=CAPS[id]?CAPS[id][ph]:'';if(cap&&cap.textContent!==txt)cap.textContent=txt;box.querySelectorAll('.figph i').forEach((el,i)=>el.classList.toggle('on',i===ph));}});}
 (function loop(){animateAll();requestAnimationFrame(loop);})();
 
 /* ---------- sound / wake lock ---------- */
@@ -648,7 +668,7 @@ function ptCard(){const ts=S.tests.slice().sort((a,b)=>a.date<b.date?-1:1),last=
 
 function viewLib(){return `<div class="view"><p class="muted" style="margin:0">حرکت‌های برنامهٔ <b>${MODES[mode()].label}</b>. روی هر حرکت بزن تا انیمیشن، نکات فرم و اشتباه‌های رایج را ببینی. تغییر برنامه از تنظیمات.</p><div class="exlist">${libIds().map(id=>`<button class="exitem" data-ex="${id}"><div class="thumb">${figSVG(id)}</div><div class="grow"><b>${EX[id].name}</b><div class="muted">${EX[id].m} · ${EX[id].eq}</div></div></button>`).join('')}</div></div>`;}
 function exDetail(id){const ex=EX[id],last=lastSets(id);return `<div class="card"><div class="row"><h2 class="grow">${ex.name}</h2><button class="btn small ghost" data-close>بستن</button></div>
- <div class="anim">${figSVG(id)}</div>
+ ${animBox(id)}
  <p class="muted" style="margin:8px 0 0">${ex.m} · ${ex.eq} · ${fa(ex.range[0])}–${fa(ex.range[1])} ${ex.unit||'تکرار'}${ex.per?' '+ex.per:''} · استراحت ${fa(ex.rest)} ثانیه</p>
  <h3 style="margin-top:10px">${ic('check')}فرم درست</h3><ul class="tips">${ex.cues.map(c=>`<li>${c}</li>`).join('')}</ul>
  <h3 style="margin-top:10px">${ic('warn')}اشتباه رایج</h3><ul class="tips">${ex.mist.map(c=>`<li>${c}</li>`).join('')}</ul>
@@ -845,7 +865,7 @@ function viewLive(){const lv=S.live,e=lv.ex[lv.i],ex=EX[e.id],done=lv.ex.reduce(
  <div class="row"><span class="muted grow">جلسهٔ ${wlab(lv.w)}${lv.short?' کوتاه':''} · ${fa(min)} دقیقه · حرکت ${fa(lv.i+1)} از ${fa(lv.ex.length)}${vol?` · ${fa(Math.round(vol))} کیلو`:''}</span><button class="btn small ghost danger" id="l-abort">انصراف</button></div>
  <div class="progress"><i style="width:${total?done/total*100:0}%"></i></div>
  ${lv.i===0?`<div class="card"><div class="row"><h3 class="grow">${ic('flame')}گرم‌کردن، ۵ دقیقه</h3><span class="muted">${fa((lv.wu||[]).filter(Boolean).length)}/۴</span></div><div class="chk" style="margin-top:6px">${WARM.map((x,i)=>`<button class="${lv.wu&&lv.wu[i]?'on':''}" data-wu="${i}" style="min-height:40px;padding:6px 10px;font-size:13px"><span class="box" style="width:20px;height:20px">${lv.wu&&lv.wu[i]?ic('check'):''}</span><span class="grow">${x}</span></button>`).join('')}</div></div>`:''}
- <div class="card">${e.fin?`<div class="muted" style="font-size:12px">${ic('flame')}پایان جلسه، اختیاری ولی چون دوست داری</div>`:''}<h2>${ex.name}</h2><div class="anim">${figSVG(e.id)}</div>
+ <div class="card">${e.fin?`<div class="muted" style="font-size:12px">${ic('flame')}پایان جلسه، اختیاری ولی چون دوست داری</div>`:''}<h2>${ex.name}</h2>${animBox(e.id)}
  ${ex.unit&&/ثانیه/.test(ex.unit)?`<div class="row" style="margin-top:8px"><button class="btn grow" id="l-hold" data-sec="${(e.sets.find(x=>!x.done)||{}).r||ex.range[1]}">${ic('timer')}تایمر ${fa((e.sets.find(x=>!x.done)||{}).r||ex.range[1])} ثانیه</button></div>`:''}
  <p class="muted" style="margin:8px 0 0">${fa(e.n)} ست × ${fa(ex.range[0])}–${fa(ex.range[1])} ${ex.unit||'تکرار'}${ex.per?' '+ex.per:''} · استراحت ${fa(rest)} ثانیه</p>
  <p class="alert" style="margin:8px 0 0">${ic('info')}${e.sg.msg}</p>
